@@ -9,7 +9,7 @@ function About() {
     <div className="ho-container">
       <div className="ho-title-container">
       <div className="ho-logo">
-          <img src={process.env.PUBLIC_URL + '/images/logo_home.png'} alt="Home Logo" />
+          <img src={process.env.PUBLIC_URL + '/images/about.png'} alt="Home Logo" />
         </div>
       </div>
 

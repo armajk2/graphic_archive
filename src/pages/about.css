@@ -58,6 +58,8 @@ position: relative;
 color: rgb(66, 66, 66,0.4);
 transition: color 0.3s ease;
 margin-top: 20px;
+border: none;
+
 } 
 
 .about-list:first-child {
@@ -172,6 +174,20 @@ align-items: center;
 .about-item-description {
   font-size: 0.8rem;
 }
+
+
+
+.about-list{
+  font-size: 13px;
+  background-color: white;
+  border: 1px solid black;
+  color: black;
+  padding: 5px;
+}
+
+.about-list:nth-child(2){
+  font-size: 13px;
+}
 }
 
 .about-content h3 {
@@ -202,17 +218,6 @@ align-items: center;
   
 }
 
-.about-list{
-  font-size: 13px;
-  background-color: white;
-  border: 1px solid black;
-  color: black;
-  padding: 5px;
-}
-
-.about-list:nth-child(2){
-  font-size: 13px;
-}
 
 
 /* Add smooth transitions */
