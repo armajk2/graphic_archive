@@ -199,9 +199,6 @@ function Home() {
           <img src={process.env.PUBLIC_URL + '/images/logo_home.png'} alt="Home Logo" />
         </div>
         <div className="ho-nav">
-          <div className="ho-title-container">
-            <div className="ho-title">Graphic Archive </div>
-          </div>
         </div>
       </div>
 

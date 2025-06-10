@@ -161,11 +161,36 @@
     padding: 15px;
   }
 
+  .new-page{
+    display: flex;
+    position: fixed;
+    z-index: 999;
+    width: 300px; 
+    border: none;
+    text-align: center;
+    padding: 5px;
+    align-items: baseline;
+  }
+
+
+  .ar-list{
+    border: 1px solid black; 
+    font-size: 13px;
+    color: black;
+    padding: 5px;
+
+  }
+
+  .ar-list:first-child{
+    font-size: 13px;
+  }
+
   .ar-main {
     flex-direction: column;
     padding: 15px;
     gap: 20px;
   }
+
 
   .ar-box1 {
     width: 100%;
@@ -211,7 +236,7 @@
 }
 
 .archive-logo img {
-  height: 40px;
+  height: 100px;
   width: auto;
 }
 

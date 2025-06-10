@@ -33,9 +33,6 @@ function Archive() {
             <img src={process.env.PUBLIC_URL + '/images/archived-graphics.png'} alt="Archive Logo" />
           </div>
           <div className="archive-nav">
-            <div className="archive-title-container">
-              <div className="archive-title">Archived Graphics</div>
-            </div>
           </div>
         </div>
       </div>

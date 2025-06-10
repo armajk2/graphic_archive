@@ -8,7 +8,9 @@ function About() {
   return (
     <div className="ho-container">
       <div className="ho-title-container">
-        <h1 className="ho-title">About</h1>
+      <div className="ho-logo">
+          <img src={process.env.PUBLIC_URL + '/images/logo_home.png'} alt="Home Logo" />
+        </div>
       </div>
 
       <div className="ar-main">
