@@ -464,7 +464,8 @@ function Generate() {
   return (
     <div className="ge-container">
       <div className="ge-title-container">
-        <img src="/images/logo.gif" alt="Graphic Archive" style={{ height: '60px', width: 'auto', objectFit: 'contain' }} />
+        <img src="/images/logo.gif" alt="Graphic Archive" style={{ height: '100px', width: 'auto', objectFit: 'contain',  transform: 'translateY(30px)' }} />
+
       </div>
 
       <div className="ge-main">
@@ -473,10 +474,10 @@ function Generate() {
             <div style={{ marginBottom: '20px' }}>
                 <h3 style={{ margin: "0 0 10px 0", fontSize: "16px", fontWeight: "500", fontFamily: "monospace" }}>ANALYSIS LAYERS</h3>
                 <div className="ge-layer-buttons">
-                    <button className={`ge-layer-btn ${currentView === 'source' ? 'active' : ''}`} onClick={() => setCurrentView('source')}>0. SOURCE</button>
-                    <button className={`ge-layer-btn ${currentView === 'layer1' ? 'active' : ''}`} onClick={() => setCurrentView('layer1')}>1. HUD</button>
-                    <button className={`ge-layer-btn ${currentView === 'layer2' ? 'active' : ''}`} onClick={() => setCurrentView('layer2')}>2. TEXTURE</button>
-                    <button className={`ge-layer-btn ${currentView === 'layer3' ? 'active' : ''}`} onClick={() => setCurrentView('layer3')}>3. CONTOUR</button>
+                    <button className={`ge-layer-btn ${currentView === 'source' ? 'active' : ''}`} onClick={() => setCurrentView('source')}>SOURCES</button>
+                    <button className={`ge-layer-btn ${currentView === 'layer1' ? 'active' : ''}`} onClick={() => setCurrentView('layer1')}>HUD</button>
+                    <button className={`ge-layer-btn ${currentView === 'layer2' ? 'active' : ''}`} onClick={() => setCurrentView('layer2')}>TEXTURE</button>
+                    <button className={`ge-layer-btn ${currentView === 'layer3' ? 'active' : ''}`} onClick={() => setCurrentView('layer3')}>CONTOUR</button>
                     <button className={`ge-layer-btn final ${currentView === 'final' ? 'active' : ''}`} onClick={() => setCurrentView('final')}>FINAL VIEW</button>
                 </div>
             </div>
