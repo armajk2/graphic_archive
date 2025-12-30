@@ -4,14 +4,20 @@ import "./Ge.css";
 
 function Generate() {
   const canvasRef = useRef();
+  const compositeCanvasRef = useRef(null);
+  const gridDataRef = useRef([]);
+
   const [imagePaths, setImagePaths] = useState([]);
   const [isFading, setIsFading] = useState(false);
+  const [currentView, setCurrentView] = useState('final');
+
   const [effects, setEffects] = useState({
-    grain: { intensity: 15, gamma: 1.4 }, // 기본값을 살짝 주어 질감 형성
-    scanlines: { gap: 4, alpha: 0.05 },
-    glitch: { lineHeight: 4, shiftAmount: 0 },
-    saturation: { value: 100 }
+    grain: { intensity: 8, gamma: 1.2 },
+    scanlines: { gap: 2, alpha: 0.15 },
+    glitch: { lineHeight: 2, shiftAmount: 0 },
+    saturation: { value: 0 }
   });
+  
   const animationRef = useRef();
   const navigate = useNavigate();
 
@@ -22,433 +28,479 @@ function Generate() {
       return;
     }
     setImagePaths(stored);
-    generateImage(stored);
+    initializeGeneration(stored);
     return () => cancelAnimationFrame(animationRef.current);
   }, []);
 
-  // --- [효과 함수들] ---
-  const generateGrain = (ctx, width, height) => {
-    const { intensity } = effects.grain;
-    if (intensity <= 0) return;
-    
-    const grainData = ctx.getImageData(0, 0, width, height);
-    const data = grainData.data;
-    for (let i = 0; i < data.length; i += 4) {
-      const noise = Math.floor(Math.random() * intensity) - intensity / 2;
-      // 감마 보정 포함하여 노이즈 적용
-      data[i] = 255 * Math.pow(Math.min(255, Math.max(0, data[i] + noise)) / 255, 1 / effects.grain.gamma);
-      data[i + 1] = 255 * Math.pow(Math.min(255, Math.max(0, data[i + 1] + noise)) / 255, 1 / effects.grain.gamma);
-      data[i + 2] = 255 * Math.pow(Math.min(255, Math.max(0, data[i + 2] + noise)) / 255, 1 / effects.grain.gamma);
+  useEffect(() => {
+    if (compositeCanvasRef.current && gridDataRef.current.length > 0) {
+      drawCurrentView();
     }
-    ctx.putImageData(grainData, 0, 0);
-  };
+  }, [currentView, effects]);
 
-  const applyScanlines = (ctx, width, height) => {
-    const { alpha } = effects.scanlines;
-    if (alpha <= 0) return;
+  // =================================================================
+  // PHASE 0: IMAGE REMIXING (Pixel Sorting)
+  // 확률 조정: 원본 유지 비율을 대폭 낮춤 (40% -> 10%)
+  // =================================================================
+  const remixSourceImage = (ctx, width, height) => {
+    const tileSize = Math.floor(5 + Math.random() * 35); 
+    const cols = Math.ceil(width / tileSize);
+    const rows = Math.ceil(height / tileSize);
     
-    ctx.save();
-    ctx.fillStyle = `rgba(0,0,0,${alpha})`;
-    for (let y = 0; y < height; y += effects.scanlines.gap) {
-      ctx.fillRect(0, y, width, 1);
-    }
-    ctx.restore();
-  };
-
-  const applyGlitchEffect = (ctx, width, height) => {
-    const { shiftAmount } = effects.glitch;
-    if (shiftAmount <= 0) return;
-    
-    for (let y = 0; y < height; y += effects.glitch.lineHeight * 4) {
-      const shift = (Math.random() - 0.5) * shiftAmount;
-      const imageData = ctx.getImageData(0, y, width, effects.glitch.lineHeight);
-      ctx.putImageData(imageData, shift, y);
-    }
-  };
-
-  const applySaturation = (ctx, width, height) => {
-    const { value } = effects.saturation;
-    if (value === 100) return;
-    
-    const imageData = ctx.getImageData(0, 0, width, height);
-    const data = imageData.data;
-    
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
-      const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-      const saturationFactor = value / 100;
-      data[i] = Math.round(gray + (r - gray) * saturationFactor);
-      data[i + 1] = Math.round(gray + (g - gray) * saturationFactor);
-      data[i + 2] = Math.round(gray + (b - gray) * saturationFactor);
-    }
-    ctx.putImageData(imageData, 0, 0);
-  };
-
-  // --- [아카이브/다운로드 기능] ---
-  const handleArchive = () => {
-    const canvas = canvasRef.current;
-    const compressedImageData = compressImage(canvas);
-    const timestamp = new Date().toISOString();
-    const archives = JSON.parse(localStorage.getItem("archivedImages") || "[]");
-    
-    archives.push({
-      imageData: compressedImageData,
-      timestamp,
-      effects: { ...effects }
-    });
-    
-    const trimmedArchives = archives.slice(-10);
-    
-    try {
-      localStorage.setItem("archivedImages", JSON.stringify(trimmedArchives));
-      alert("Image archived successfully!");
-    } catch (error) {
-      let currentArchives = [...trimmedArchives];
-      while (currentArchives.length > 0) {
-        try {
-          localStorage.setItem("archivedImages", JSON.stringify(currentArchives));
-          alert("Image archived (Older images removed due to storage limits)");
-          break;
-        } catch (e) {
-          currentArchives.shift();
+    const tiles = [];
+    for (let x = 0; x < cols; x++) {
+        const colTiles = [];
+        for (let y = 0; y < rows; y++) {
+            const data = ctx.getImageData(x * tileSize, y * tileSize, tileSize, tileSize);
+            let r=0, g=0, b=0, count=0;
+            const d = data.data;
+            for(let i=0; i<d.length; i+=4) {
+                if(d[i+3]>0) { r+=d[i]; g+=d[i+1]; b+=d[i+2]; count++; }
+            }
+            const brightness = count > 0 ? (r+g+b)/3/count : 0;
+            colTiles.push({ data, brightness, y: y * tileSize });
         }
-      }
+        tiles.push(colTiles);
     }
-  };
 
-  const compressImage = (canvas) => {
-    const tempCanvas = document.createElement('canvas');
-    const tempCtx = tempCanvas.getContext('2d');
-    tempCanvas.width = 1080;
-    tempCanvas.height = 1080;
-    tempCtx.drawImage(canvas, 0, 0, 1080, 1080);
-    return tempCanvas.toDataURL('image/png');
-  };
-
-  // --- [메인 생성 로직: 유기적 네트워크 토폴로지] ---
-  
-  // 헬퍼: 단일 삼각형 면(Face)과 엣지(Edge) 그리기
-  const drawNetworkTriangle = (ctx, img, p1, p2, p3) => {
-    const width = ctx.canvas.width;
-    const height = ctx.canvas.height;
-
-    ctx.save();
-    
-    // 경로 생성
-    ctx.beginPath();
-    ctx.moveTo(p1.x, p1.y);
-    ctx.lineTo(p2.x, p2.y);
-    ctx.lineTo(p3.x, p3.y);
-    ctx.closePath();
-
-    // 클리핑: 이미지를 삼각형 형태로 잘라냄
-    ctx.clip();
-
-    // 이미지 그리기 (약간의 스케일 조정을 통해 입체감 부여 가능, 여기선 정직하게 매핑)
-    ctx.drawImage(img, 0, 0, width, height);
-
-    // 엣지(Edge) 그리기: 얇은 흰색 선으로 네트워크 구조 강조
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.5)"; // 반투명 흰색
-    ctx.lineWidth = 1; 
-    ctx.stroke();
-
-    ctx.restore();
-  };
-
-  // 핵심 함수: 그리드 왜곡 및 네트워크 생성
-  const overlayImagePieces = (img) => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    const width = canvas.width;
-    const height = canvas.height;
-
-    // [설정값] 네트워크 밀도와 왜곡 정도 조절
-    const gap = 80; // 격자 간격 (작을수록 조밀함)
-    const randomness = 0.6; // 왜곡 강도 (0 ~ 1.0)
-
-    // 1. 토폴로지 그리드 포인트 생성
-    const cols = Math.ceil(width / gap) + 2;
-    const rows = Math.ceil(height / gap) + 2;
-    const points = [];
-
-    // 정점(Vertex) 생성 및 위치 이탈(Perturbation)
-    for (let y = -1; y < rows; y++) {
-      for (let x = -1; x < cols; x++) {
-        // 정형적인 그리드 좌표에 랜덤 오프셋 적용
-        const xOff = (Math.random() - 0.5) * gap * randomness;
-        const yOff = (Math.random() - 0.5) * gap * randomness;
+    tiles.forEach((colTiles, colIndex) => {
+        const sortType = Math.random();
         
-        points.push({
-          x: x * gap + xOff,
-          y: y * gap + yOff,
-          c: x, // 열 인덱스
-          r: y  // 행 인덱스
+        if (sortType < 0.45) {
+            colTiles.sort((a, b) => b.brightness - a.brightness);
+        } else if (sortType < 0.90) {
+            colTiles.sort((a, b) => a.brightness - b.brightness);
+        }
+        colTiles.forEach((tile, rowIndex) => {
+            ctx.putImageData(tile.data, colIndex * tileSize, rowIndex * tileSize);
+        });
+    });
+  };
+
+  // --- [Phase 1: Analysis] ---
+  const analyzeImageStatistics = (width, height, sourceCanvas) => {
+    const ctx = sourceCanvas.getContext('2d');
+    const gridSize = 20; 
+    const cols = Math.ceil(width / gridSize);
+    const rows = Math.ceil(height / gridSize);
+    const analyzedData = [];
+
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const posX = x * gridSize;
+        const posY = y * gridSize;
+        
+        const imgData = ctx.getImageData(posX, posY, gridSize, gridSize);
+        const data = imgData.data;
+        
+        let rSum=0, gSum=0, bSum=0, totalLum=0;
+        const pixels = [];
+
+        for(let i=0; i<data.length; i+=4) {
+            const r = data[i]; const g = data[i+1]; const b = data[i+2];
+            const lum = 0.299*r + 0.587*g + 0.114*b;
+            rSum += r; gSum += g; bSum += b;
+            totalLum += lum;
+            pixels.push(lum);
+        }
+        
+        const count = pixels.length;
+        if(count === 0) continue;
+
+        const avgLum = totalLum / count;
+        const avgR = Math.floor(rSum / count);
+        const avgG = Math.floor(gSum / count);
+        const avgB = Math.floor(bSum / count);
+        
+        let varianceSum = 0;
+        for(let i=0; i<pixels.length; i++) {
+            varianceSum += Math.pow(pixels[i] - avgLum, 2);
+        }
+        const variance = Math.sqrt(varianceSum / count);
+
+        const rNorm = avgR/255, gNorm = avgG/255, bNorm = avgB/255;
+        const max = Math.max(rNorm, gNorm, bNorm), min = Math.min(rNorm, gNorm, bNorm);
+        let h, s, l = (max + min) / 2;
+
+        if (max === min) { h = s = 0; } 
+        else {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case rNorm: h = (gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0); break;
+                case gNorm: h = (bNorm - rNorm) / d + 2; break;
+                case bNorm: h = (rNorm - gNorm) / d + 4; break;
+            }
+            h /= 6;
+        }
+        const hueDegree = h * 360; 
+
+        analyzedData.push({
+            x: posX, y: posY, w: gridSize, h: gridSize,
+            avgLum, variance,
+            avgR, avgG, avgB,
+            hue: hueDegree, sat: s,
+            col: x, row: y
         });
       }
     }
+    return analyzedData;
+  };
 
-    // 2. 네트워크 연결 및 면(Face) 재구성 (Triangulation)
-    for (let y = -1; y < rows - 1; y++) {
-      for (let x = -1; x < cols - 1; x++) {
-        // 현재 격자 칸의 4개 정점 찾기
-        const p1 = points.find(p => p.c === x && p.r === y);       // 좌상
-        const p2 = points.find(p => p.c === x + 1 && p.r === y);   // 우상
-        const p3 = points.find(p => p.c === x && p.r === y + 1);   // 좌하
-        const p4 = points.find(p => p.c === x + 1 && p.r === y + 1); // 우하
+  // --- [Drawing Functions] ---
+  
+  // Layer 1: Color HUD (Structure)
+  const drawLayerVariance = (ctx, width, height) => {
+    const data = gridDataRef.current;
+    ctx.lineWidth = 0.8;
 
-        if (p1 && p2 && p3 && p4) {
-          // 사각형을 두 개의 삼각형으로 분할하여 그리기
-          drawNetworkTriangle(ctx, img, p1, p2, p3); // 삼각형 1
-          drawNetworkTriangle(ctx, img, p2, p4, p3); // 삼각형 2
+    data.forEach(cell => {
+        const margin = 60; 
+        if (cell.x < margin || cell.x > width - margin || cell.y < margin || cell.y > height - margin) return;
+
+        const cx = cell.x + cell.w / 2;
+        const cy = cell.y + cell.h / 2;
+
+        if (cell.sat < 0.15 || cell.avgLum < 15) return; 
+
+        const hudColor = `hsla(${cell.hue}, 100%, 65%, 0.9)`;
+        ctx.strokeStyle = hudColor;
+        ctx.fillStyle = hudColor;
+
+        if ((cell.hue >= 330 || cell.hue < 30) || (cell.hue >= 150 && cell.hue < 210)) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, cell.w * 0.35, 0, Math.PI * 2);
+            ctx.stroke();
+            const size = cell.w * 0.6;
+            ctx.beginPath();
+            ctx.moveTo(cx - size, cy); ctx.lineTo(cx + size, cy);
+            ctx.moveTo(cx, cy - size); ctx.lineTo(cx, cy + size);
+            ctx.stroke();
+        } else if (cell.hue >= 210 && cell.hue < 270) {
+            const size = cell.w * 0.4;
+            const gap = 3;
+            ctx.beginPath();
+            ctx.moveTo(cx - size/2 + gap, cy - size/2); ctx.lineTo(cx - size/2, cy - size/2); 
+            ctx.lineTo(cx - size/2, cy + size/2); ctx.lineTo(cx - size/2 + gap, cy + size/2);
+            ctx.moveTo(cx + size/2 - gap, cy - size/2); ctx.lineTo(cx + size/2, cy - size/2); 
+            ctx.lineTo(cx + size/2, cy + size/2); ctx.lineTo(cx + size/2 - gap, cy + size/2);
+            ctx.stroke();
+        } else {
+            ctx.fillRect(cx - 1, cy - 1, 2, 2);
+            ctx.beginPath();
+            ctx.moveTo(cx - 3, cy + 3); ctx.lineTo(cx + 3, cy - 3);
+            ctx.stroke();
         }
-      }
-    }
-
-    // 3. 노드(Node) 시각화: 교차점 강조
-    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-    points.forEach(p => {
-      // 캔버스 내부에 있는 점만 그리기
-      if (p.x > 0 && p.x < width && p.y > 0 && p.y < height) {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2); // 반지름 2.5px 원
-        ctx.fill();
-      }
     });
   };
 
-  const generateImage = (imagePaths) => {
+  // Layer 2: Grunge Texture (Density)
+  const drawLayerGrunge = (ctx, width, height) => {
+    const data = gridDataRef.current;
+    const baseMargin = 60; 
+    const roughness = 50; 
+
+    data.forEach(cell => {
+        if (cell.avgLum < 5) return;
+
+        const randomMargin = baseMargin + (Math.random() * roughness);
+        if (cell.x < randomMargin || cell.x > width - randomMargin || cell.y < randomMargin || cell.y > height - randomMargin) return;
+
+        const density = Math.floor((cell.avgLum / 255) * 10); 
+        const cx = cell.x + cell.w / 2;
+        const cy = cell.y + cell.h / 2;
+
+        ctx.fillStyle = `rgba(${cell.avgR}, ${cell.avgG}, ${cell.avgB}, 0.55)`;
+        ctx.strokeStyle = `rgba(${cell.avgR}, ${cell.avgG}, ${cell.avgB}, 0.25)`;
+
+        for (let i = 0; i < density; i++) {
+            const spread = cell.w * 1.5; 
+            const rx = cx + (Math.random() - 0.5) * spread * 2;
+            const ry = cy + (Math.random() - 0.5) * spread * 2;
+            
+            const type = Math.random();
+            const size = Math.random() * 12 + 4; 
+
+            if (type < 0.6) {
+                const angle = Math.random() * Math.PI * 2;
+                const len = Math.random() * 30 + 10; 
+                ctx.beginPath();
+                ctx.moveTo(rx, ry);
+                ctx.lineTo(rx + Math.cos(angle) * len, ry + Math.sin(angle) * len);
+                ctx.lineWidth = Math.random() * 3 + 1; 
+                ctx.stroke();
+            } else {
+                ctx.save();
+                ctx.translate(rx, ry);
+                ctx.rotate(Math.random() * Math.PI);
+                ctx.fillRect(-size/2, -size/2, size, size * (Math.random() * 2 + 1));
+                ctx.restore();
+            }
+        }
+    });
+  };
+
+  // Layer 3: Chromatic Contours (Iso-lines)
+  const drawLayerContours = (ctx, width, height) => {
+    const data = gridDataRef.current;
+    const gridSize = 20;
+    const cols = Math.ceil(width / gridSize);
+    const step = 30; 
+    
+    ctx.lineWidth = 1.2;
+    ctx.lineCap = "round";
+
+    for (let i = 0; i < data.length; i++) {
+        const current = data[i];
+        const margin = 50;
+        if (current.x < margin || current.x > width-margin || current.y < margin || current.y > height-margin) continue;
+        if (current.avgLum < 20 || current.sat < 0.1) continue;
+
+        const cx = current.x + current.w / 2;
+        const cy = current.y + current.h / 2;
+
+        const neighbors = [
+            { idx: i + 1, type: 'right' },
+            { idx: i + cols, type: 'down' }
+        ];
+
+        for (let n of neighbors) {
+            if (n.idx >= data.length) continue;
+            const neighbor = data[n.idx];
+            if (n.type === 'right' && neighbor.row !== current.row) continue;
+            if (neighbor.avgLum < 20 || neighbor.sat < 0.1) continue;
+
+            const h1 = current.hue;
+            const h2 = neighbor.hue;
+            
+            if (Math.abs(h1 - h2) > 180) continue;
+
+            const minH = Math.min(h1, h2);
+            const maxH = Math.max(h1, h2);
+            const startLevel = Math.ceil(minH / step) * step;
+            
+            if (startLevel < maxH) {
+                const nx = neighbor.x + neighbor.w / 2;
+                const ny = neighbor.y + neighbor.h / 2;
+                
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(nx, ny);
+                ctx.strokeStyle = `hsla(${startLevel}, 100%, 70%, 0.8)`;
+                ctx.stroke();
+                
+                ctx.fillStyle = "#fff";
+                const midX = (cx + nx) / 2;
+                const midY = (cy + ny) / 2;
+                ctx.fillRect(midX-1, midY-1, 2, 2);
+            }
+        }
+    }
+  };
+
+  // [Final Synthesis]
+  const drawFinal = (ctx, width, height) => {
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = "#050a14"; 
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.save();
+    drawLayerGrunge(ctx, width, height);
+    ctx.restore();
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen'; 
+    drawLayerVariance(ctx, width, height); 
+    ctx.restore();
+    
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    drawLayerContours(ctx, width, height);
+    ctx.restore();
+
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = "rgba(255,255,255,0.08)";
+    drawGridOverlay(ctx, width, height);
+  };
+
+  // --- [Helpers] ---
+  const drawCurrentView = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     const width = canvas.width;
     const height = canvas.height;
 
-    ctx.clearRect(0, 0, width, height);
+    // Reset logic
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = 1.0;
+    ctx.fillStyle = "#050505";
+    ctx.fillRect(0, 0, width, height);
 
-    const loadImage = (src) =>
-      new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.onload = () => resolve(img);
-        img.src = src;
-      });
+    switch (currentView) {
+        case 'source':
+            ctx.drawImage(compositeCanvasRef.current, 0, 0, width, height);
+            break;
+        case 'layer1':
+            drawLayerVariance(ctx, width, height);
+            break;
+        case 'layer2':
+            drawLayerGrunge(ctx, width, height);
+            break;
+        case 'layer3': // Contours
+            drawLayerContours(ctx, width, height);
+            break;
+        case 'final':
+        default:
+            drawFinal(ctx, width, height);
+    }
+    
+    ctx.globalCompositeOperation = 'source-over';
+    applyScanlines(ctx, width, height);
+    generateGrain(ctx, width, height);
+  };
 
-    // 색상 추출 함수
-    const getColorSwatches = async (imageUrl) => {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.onload = () => {
-          const tempCanvas = document.createElement('canvas');
-          const tempCtx = tempCanvas.getContext('2d');
-          tempCanvas.width = 100;
-          tempCanvas.height = 100;
-          tempCtx.drawImage(img, 0, 0, 100, 100);
-          const imageData = tempCtx.getImageData(0, 0, 100, 100);
-          const pixels = imageData.data;
-          const colors = new Set();
-          for (let i = 0; i < pixels.length; i += 4) {
-            if (pixels[i + 3] > 128) {
-              colors.add(`rgb(${pixels[i]},${pixels[i + 1]},${pixels[i + 2]})`);
-            }
+  const drawGridOverlay = (ctx, w, h) => {
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(w/2, 0); ctx.lineTo(w/2, h);
+    ctx.moveTo(0, h/2); ctx.lineTo(w, h/2);
+    ctx.stroke();
+    ctx.strokeRect(10, 10, w-20, h-20);
+  };
+
+  const initializeGeneration = (imagePaths) => {
+    const canvas = canvasRef.current;
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    const loadImage = (src) => new Promise((resolve) => {
+        const img = new Image(); img.crossOrigin = "Anonymous"; img.onload = () => resolve(img); img.src = src;
+    });
+
+    Promise.all(imagePaths.map(loadImage)).then((images) => {
+      const compositeCanvas = document.createElement('canvas');
+      compositeCanvas.width = width; compositeCanvas.height = height;
+      const compositeCtx = compositeCanvas.getContext('2d');
+      compositeCtx.fillStyle = "#000"; compositeCtx.fillRect(0, 0, width, height);
+      
+      images.forEach((img, i) => { 
+          if(i===0) compositeCtx.drawImage(img, 0, 0, width, height);
+          else {
+             compositeCtx.globalCompositeOperation = 'screen';
+             compositeCtx.drawImage(img, 0, 0, width, height);
           }
-          resolve(Array.from(colors));
-        };
-        img.src = imageUrl;
       });
-    };
-
-    // 배경용 색상 도형 그리기
-    const drawColorShapes = (colors) => {
-      const gridSize = 60;
-      const cols = Math.ceil(width / gridSize) + 2;
-      const positions = [];
-      for (let y = -gridSize; y < height + gridSize; y += gridSize * 0.8) {
-        for (let x = -gridSize; x < width + gridSize; x += gridSize * 0.8) {
-          positions.push({ x, y });
-        }
-      }
-      // 셔플
-      for (let i = positions.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [positions[i], positions[j]] = [positions[j], positions[i]];
-      }
       
-      positions.forEach((pos) => {
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        const baseSize = gridSize * (1 + Math.random() * 0.8);
-        ctx.fillStyle = color;
-        ctx.fillRect(pos.x, pos.y, baseSize, baseSize);
-      });
-    };
-
-    Promise.all(imagePaths.map(loadImage)).then(async (images) => {
-      // [Layer 1] 배경: 색상 추출 및 블러
-      const colorCanvas = document.createElement('canvas');
-      colorCanvas.width = width;
-      colorCanvas.height = height;
-      
-      const allColors = [];
-      for (const img of images) {
-        const colors = await getColorSwatches(img.src);
-        allColors.push(...colors);
-      }
-      
-      drawColorShapes(allColors); // 메인 캔버스에 직접 그림 (배경)
-      
-      // 배경 블러 처리
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = width;
-      tempCanvas.height = height;
-      const tempCtx = tempCanvas.getContext('2d');
-      tempCtx.drawImage(canvas, 0, 0);
-      tempCtx.filter = 'blur(20px)'; // 몽환적인 배경을 위해 블러 강화
-      tempCtx.drawImage(canvas, 0, 0);
-      ctx.drawImage(tempCanvas, 0, 0);
-      
-      // [Layer 2] 유기적 네트워크 메쉬 (핵심 로직 변경됨)
-      // 블렌드 모드를 사용하여 배경과 자연스럽게 섞이게 함
-      ctx.globalCompositeOperation = 'hard-light'; 
-      for (const img of images) {
-        overlayImagePieces(img);
-      }
-      ctx.globalCompositeOperation = 'source-over';
-      
-      // [Layer 3] 후처리 이펙트
-      generateGrain(ctx, width, height);
-      applyScanlines(ctx, width, height);
-      applySaturation(ctx, width, height);
-      applyGlitchEffect(ctx, width, height);
+      remixSourceImage(compositeCtx, width, height);
+      compositeCanvasRef.current = compositeCanvas;
+      gridDataRef.current = analyzeImageStatistics(width, height, compositeCanvas);
+      drawCurrentView();
     });
   };
 
-  const handleDownload = () => {
+  // --- [새로 추가된 아카이브 로직] ---
+  const handleArchive = () => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    try {
+      // 용량 최적화를 위해 webp 포맷 사용
+      const dataUrl = canvas.toDataURL("image/webp", 0.8);
+      
+      const newArchiveItem = {
+        id: Date.now(),
+        imageData: dataUrl,
+        timestamp: new Date().toISOString(),
+        viewMode: currentView,
+        effects: { ...effects }
+      };
+
+      const existingArchives = JSON.parse(localStorage.getItem("archivedImages") || "[]");
+      // 최신 20개까지만 저장 (용량 관리)
+      const updatedArchives = [newArchiveItem, ...existingArchives].slice(0, 20);
+      localStorage.setItem("archivedImages", JSON.stringify(updatedArchives));
+
+      alert("Successfully Archived!");
+    } catch (e) {
+      console.error("Storage failed", e);
+      alert("Storage is full. Please delete some archived images.");
+    }
+  };
+
+  const generateGrain = (ctx, w, h) => {
+      if(effects.grain.intensity <= 0) return;
+      const id = ctx.getImageData(0,0,w,h); const d = id.data;
+      for(let i=0; i<d.length; i+=4) {
+          const n = (Math.random()-0.5) * effects.grain.intensity;
+          d[i]+=n; d[i+1]+=n; d[i+2]+=n;
+      }
+      ctx.putImageData(id, 0, 0);
+  };
+  const applyScanlines = (ctx, w, h) => {
+      if(effects.scanlines.alpha <= 0) return;
+      ctx.fillStyle = `rgba(0,0,0,${effects.scanlines.alpha})`;
+      for(let y=0; y<h; y+=effects.scanlines.gap) ctx.fillRect(0,y,w,1);
+  };
+
+  const handleDownload = () => {
     const link = document.createElement("a");
-    link.download = "generated_network.png";
-    link.href = canvas.toDataURL("image/png");
+    link.download = `analysis_${currentView}.png`;
+    link.href = canvasRef.current.toDataURL("image/png");
     link.click();
   };
-
-  const handleRegenerate = () => {
-    setIsFading(true);
-    setTimeout(() => {
-      generateImage(imagePaths);
-      setIsFading(false);
-    }, 300);
+  const handleRegenerate = () => { 
+      setIsFading(true);
+      setTimeout(() => {
+        initializeGeneration(imagePaths);
+        setIsFading(false);
+      }, 300);
   };
-
-  const handleBack = () => {
-    localStorage.removeItem("generatedImage");
-    localStorage.removeItem("selectedImages");
-    setImagePaths([]);
-    setIsFading(false);
-    navigate("/");
+  const handleBack = () => { 
+      localStorage.removeItem("generatedImage");
+      localStorage.removeItem("selectedImages");
+      navigate("/"); 
   };
 
   return (
     <div className="ge-container">
       <div className="ge-title-container">
-        <img 
-          src="/images/logo.gif" 
-          alt="Graphic Archive" 
-          style={{ height: '60px', width: 'auto', objectFit: 'contain' }}
-        />
+        <img src="/images/logo.gif" alt="Graphic Archive" style={{ height: '60px', width: 'auto', objectFit: 'contain' }} />
       </div>
 
       <div className="ge-main">
         <div className="ge-box1">
           <div className="ge-effects-panel">
-            <h3 style={{ margin: "0 0 15px 0", fontSize: "16px", fontWeight: "500" }}>Effects</h3>
+            <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ margin: "0 0 10px 0", fontSize: "16px", fontWeight: "500", fontFamily: "monospace" }}>ANALYSIS LAYERS</h3>
+                <div className="ge-layer-buttons">
+                    <button className={`ge-layer-btn ${currentView === 'source' ? 'active' : ''}`} onClick={() => setCurrentView('source')}>0. SOURCE</button>
+                    <button className={`ge-layer-btn ${currentView === 'layer1' ? 'active' : ''}`} onClick={() => setCurrentView('layer1')}>1. HUD</button>
+                    <button className={`ge-layer-btn ${currentView === 'layer2' ? 'active' : ''}`} onClick={() => setCurrentView('layer2')}>2. TEXTURE</button>
+                    <button className={`ge-layer-btn ${currentView === 'layer3' ? 'active' : ''}`} onClick={() => setCurrentView('layer3')}>3. CONTOUR</button>
+                    <button className={`ge-layer-btn final ${currentView === 'final' ? 'active' : ''}`} onClick={() => setCurrentView('final')}>FINAL VIEW</button>
+                </div>
+            </div>
+
+            <h3 style={{ margin: "0 0 15px 0", fontSize: "16px", fontWeight: "500", fontFamily: "monospace" }}>DISPLAY PARAMS</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-              {/* Grain Control */}
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                  <label style={{ fontSize: "14px" }}>Grain</label>
-                  <span style={{ fontSize: "12px", opacity: 0.7 }}>{effects.grain.intensity}%</span>
-                </div>
-                <input
-                  type="range" min="0" max="100" step="10"
-                  value={effects.grain.intensity}
-                  onChange={(e) => {
-                    const value = Number(e.target.value);
-                    e.target.style.setProperty('--value', `${value}%`);
-                    setEffects(prev => ({ ...prev, grain: { ...prev.grain, intensity: value } }));
-                  }}
-                  style={{ width: "100%", "--value": `${effects.grain.intensity}%` }}
-                />
-              </div>
-              {/* Scanlines Control */}
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                  <label style={{ fontSize: "14px" }}>Scanlines</label>
-                  <span style={{ fontSize: "12px", opacity: 0.7 }}>{Math.round(effects.scanlines.alpha * 100)}%</span>
-                </div>
-                <input
-                  type="range" min="0" max="100" step="10"
-                  value={effects.scanlines.alpha * 100}
-                  onChange={(e) => {
-                    const value = Number(e.target.value);
-                    e.target.style.setProperty('--value', `${value}%`);
-                    setEffects(prev => ({ ...prev, scanlines: { ...prev.scanlines, alpha: value / 100 } }));
-                  }}
-                  style={{ width: "100%", "--value": `${effects.scanlines.alpha * 100}%` }}
-                />
-              </div>
-              {/* Glitch Control */}
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                  <label style={{ fontSize: "14px" }}>Glitch</label>
-                  <span style={{ fontSize: "12px", opacity: 0.7 }}>{effects.glitch.shiftAmount}%</span>
-                </div>
-                <input
-                  type="range" min="0" max="100" step="10"
-                  value={effects.glitch.shiftAmount}
-                  onChange={(e) => {
-                    const value = Number(e.target.value);
-                    e.target.style.setProperty('--value', `${value}%`);
-                    setEffects(prev => ({ ...prev, glitch: { ...prev.glitch, shiftAmount: value } }));
-                  }}
-                  style={{ width: "100%", "--value": `${effects.glitch.shiftAmount}%` }}
-                />
-              </div>
-              {/* Saturation Control */}
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                  <label style={{ fontSize: "14px" }}>Saturation</label>
-                  <span style={{ fontSize: "12px", opacity: 0.7 }}>{effects.saturation.value}%</span>
-                </div>
-                <input
-                  type="range" min="0" max="100" step="10"
-                  value={effects.saturation.value}
-                  onChange={(e) => {
-                    const value = Number(e.target.value);
-                    e.target.style.setProperty('--value', `${value}%`);
-                    setEffects(prev => ({ ...prev, saturation: { ...prev.saturation, value } }));
-                  }}
-                  style={{ width: "100%", "--value": `${effects.saturation.value}%` }}
-                />
+                <label style={{ fontSize: "12px", fontFamily: "monospace" }}>NOISE_LEVEL: {effects.grain.intensity}</label>
+                <input type="range" min="0" max="50" step="5" value={effects.grain.intensity} onChange={(e) => setEffects(p => ({...p, grain: {...p.grain, intensity: Number(e.target.value)}}))} style={{ width: "100%" }} />
               </div>
             </div>
           </div>
 
           <div className="ge-button-container">
-            <button onClick={handleBack} className="ge-button ge-button-back">Back</button>
-            <button onClick={handleArchive} className="ge-button ge-button-archive">Archive</button>
-            <button onClick={handleRegenerate} className="ge-button ge-button-regenerate">Regenerate</button>
-            <button onClick={handleDownload} className="ge-button ge-button-download">Download</button>
+            <button onClick={handleBack} className="ge-button ge-button-back">BACK</button>
+            {/* [새로 추가된 아카이브 버튼] */}
+            <button onClick={handleArchive} className="ge-button ge-button-archive">ARCHIVE</button> 
+            <button onClick={handleRegenerate} className="ge-button ge-button-regenerate">RE-ANALYZE</button>
+            <button onClick={handleDownload} className="ge-button ge-button-download">EXPORT DATA</button>
           </div>
         </div>
 
         <div className="ge-canvas-container">
-          <canvas
-            ref={canvasRef}
-            width={1080}
-            height={1080}
-            className="ge-canvas"
-            style={{ opacity: isFading ? 0.2 : 1 }}
-          />
+          <canvas ref={canvasRef} width={1080} height={1080} className="ge-canvas" style={{ opacity: isFading ? 0.2 : 1 }} />
         </div>
       </div>
     </div>

@@ -6,15 +6,6 @@
   flex-direction: column;
 }
 
-.ar-title-container {
-  display: flex;
-  justify-content: space-between;
-  max-width: 1200px;
-  height: 150px;
-  border-bottom: solid 1px black;
-  flex-shrink: 0;
-  padding: 20px;
-}
 
 .ar-main {
   display: flex;
@@ -32,15 +23,6 @@
   flex-direction: column;     
   justify-content: flex-end;  
   text-align: left;
-}
-
-.ar-title {
-  text-align: center;
-  color: #c81a1a;
-  overflow: hidden;
-  white-space: nowrap;
-  text-indent: -20px;
-  font-size: 48px;    
 }
 
 .new-page{
@@ -94,7 +76,6 @@
   flex-direction: column;
   width: 100%;
   height: auto;
-  border: 1px solid black;
   min-height: 0;
 }
 
@@ -103,16 +84,6 @@
   height: 300px;
   object-fit: cover;
   transition: all 0.3s;
-  flex-shrink: 0;
-  transform-origin: center;
-}
-
-.ar-info {
-  padding: 15px;
-  background: white;
-  display: flex;
-  justify-content: center;
-  
 }
 
 .ar-date {
@@ -130,13 +101,13 @@
 
 .ar-button-download {
   padding: 8px 16px;
-  border: 1px solid black;
+  border: 0.1px solid black;
   background: white;
   color: black;
   cursor: pointer;
   transition: all 0.3s;
   width: 50%;
-  font-size: 14px;
+  font-size: 12px;
   flex: 1;
   font-family: "Orbit";
 
@@ -147,6 +118,8 @@
   color: white;
 }
 
+
+
 /* Responsive styles */
 @media screen and (max-width: 768px) {
   .ar-container {
@@ -154,12 +127,6 @@
     min-height: 100vh;
   }
 
-  .ar-title-container {
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
-  }
 
   .new-page{
     display: flex;
@@ -198,10 +165,6 @@
     margin-top: 20px;
   }
 
-  .ar-title {
-    font-size: 32px;
-    text-indent: 0;
-  }
 
   .ar-grid {
     grid-template-columns: 1fr;
@@ -213,9 +176,6 @@
     height: 250px;
   }
 
-  .ar-buttons {
-    flex-direction: column;
-  }
 
   .ar-button-download,
   .ar-button-delete {
@@ -238,6 +198,8 @@
 .archive-logo img {
   height: 100px;
   width: auto;
+    transform: translateY(30px); /* Y축으로 10px 이동. 값을 조절하세요 */
+
 }
 
 .archive-nav {
