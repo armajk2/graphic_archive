@@ -307,6 +307,7 @@
 
 .ge-effects-panel h3 {
   margin-bottom: 20px;
+  font-weight: 500;
   font-size: 16px;
   font-weight: 500;
   color: #333;
@@ -346,8 +347,8 @@
 
 .ge-layer-btn.final {
   grid-column: span 3; /* Final 버튼은 3칸 차지 */
-  background: #333;
-  color: #fff;
+  background: #fff;
+  color: #000000;
   font-weight: bold;
   margin-top: 4px;
 }

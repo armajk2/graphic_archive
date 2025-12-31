@@ -50,6 +50,7 @@
   font-size: 15px;
   text-align-last: left;
   -moz-text-align-last: right;  /* Code for Firefox */
+  
 }
 
 .ho-title {
@@ -125,7 +126,8 @@
 .ho-image-container {
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+
   transition: transform 0.3s;
   display: flex;
   flex-direction: column;

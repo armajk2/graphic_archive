@@ -472,7 +472,7 @@ function Generate() {
         <div className="ge-box1">
           <div className="ge-effects-panel">
             <div style={{ marginBottom: '20px' }}>
-                <h3 style={{ margin: "0 0 10px 0", fontSize: "16px", fontWeight: "500", fontFamily: "monospace" }}>ANALYSIS LAYERS</h3>
+                <h3>ANALYSIS LAYERS</h3>
                 <div className="ge-layer-buttons">
                     <button className={`ge-layer-btn ${currentView === 'source' ? 'active' : ''}`} onClick={() => setCurrentView('source')}>SOURCES</button>
                     <button className={`ge-layer-btn ${currentView === 'layer1' ? 'active' : ''}`} onClick={() => setCurrentView('layer1')}>HUD</button>
@@ -482,7 +482,7 @@ function Generate() {
                 </div>
             </div>
 
-            <h3 style={{ margin: "0 0 15px 0", fontSize: "16px", fontWeight: "500", fontFamily: "monospace" }}>DISPLAY PARAMS</h3>
+            <h3>DISPLAY PARAMS</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
               <div>
                 <label style={{ fontSize: "12px", fontFamily: "monospace" }}>NOISE_LEVEL: {effects.grain.intensity}</label>
