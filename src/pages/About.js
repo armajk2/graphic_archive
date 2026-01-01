@@ -1,17 +1,22 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./about.css";
+import DataSculpture from './DataSculpture'; // 경로에 맞게
 
 function About() {
   const navigate = useNavigate();
   const [activeMethod, setActiveMethod] = useState(2); // 기본값: 2 (최신 방법론)
   return (
+    
     <div className="about-container">
       <div className="about-title-container">
       <div className="about-logo">
           <img src={process.env.PUBLIC_URL + '/images/about.png'} alt="Home Logo" />
         </div>
       </div>
+
+
+      
 
       <div className="ar-main">
         <div className="box3">

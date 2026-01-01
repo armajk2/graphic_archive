@@ -1,17 +1,4 @@
-/* about.css */
-
-/* --- [1. Animation] --- */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
+/* --- [Desktop / Common Styles] --- */
 .about-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -20,240 +7,249 @@
   flex-direction: column;
 }
 
+/* Header */
 .about-title-container {
   display: flex;
-  justify-content: space-between;
-  max-width: 1200px;
-  height: 150px;
+  align-items: center;
+  padding: 20px;
+  background: white;
   border-bottom: 1px solid #eee;
   flex-shrink: 0;
-  padding: 20px;
-}
-
-.about-logo {
-  margin-right: 20px;
 }
 
 .about-logo img {
   height: 100px;
   width: auto;
+  transform: translateY(30px);
 }
 
-.fade-in {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 기존 4열 유지 */
-  gap: 20px;
-  width: 100%;
-  animation: fadeIn 0.5s ease-out forwards;
-}
-
-/* 제목(H2)은 그리드 전체를 가로지르게 설정 */
-.fade-in h2 {
-  grid-column: 1 / -1; /* 전체 너비 차지 */
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid black;
-  color: black;
-  text-align: left;
-}
-
-/* --- [2. Layout Containers] --- */
-.about-content {
-  /* Grid 속성을 .fade-in으로 옮겼으므로 여기서는 여백만 관리 */
-  padding: 20px 0px 20px 0px;
-  color: black;
-  flex: 1; /* 남은 공간 차지 */
-  overflow-y: auto; /* 내용이 길어지면 스크롤 */
-}
-
-/* Sidebar Box */
-.box3 {
-  width: 250px;
-  height: 91%;
+/* Main Layout */
+.ar-main {
   display: flex;
-  flex-direction: column;     
-  justify-content: flex-end;  
-  text-align: left;
-  background-color: white;
-  flex-shrink: 0; /* 사이드바 줄어들지 않게 */
-
+  flex: 1;
+  overflow: hidden;
+  padding: 20px;
+  gap: 40px;
 }
 
-/* --- [3. Typography & Elements] --- */
-.about-content h3 {
-  margin-bottom: 20px;
-  padding-left: 10px;
-  line-height: 1.6;
-  font-size: 16px;
-  font-weight: bold;
+/* Left Sidebar (Desktop) */
+.box3 {
+  width: 300px;
+  height: 91%;
   text-align: left;
-  word-break: keep-all;
-  border-left: 1px solid black; /* 포인트 디자인 */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* 아래로 정렬 */
+  flex-shrink: 0;
 }
 
-.about-content p {
-  margin-bottom: 40px; /* 문단 간 간격 확보 */
-  line-height: 1.6;
-  font-size: 14px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ddd; /* 너무 진하지 않게 조정 */
-  text-align: left;
+/* Intro Text */
+.intro {
+  margin-bottom: auto; /* 상단에 위치 */
+  border: 1px solid black;
+  padding: 20px;
   word-break: keep-all;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 .intro p {
-  margin-bottom: 20px;
-  line-height: 1.6;
-  font-size: 16px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid black;
   font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 18px;
 }
 
-.intro {
-  font-size: 14px;
-  line-height: 1.6;
+/* Content Area (Right) */
+.about-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid #eee;
+  background: white;
+  line-height: 1.8;
 }
 
-/* --- [4. Method Tabs (New)] --- */
+.about-content h3 {
+  margin-top: 30px;
+  margin-bottom: 10px;
+  font-size: 18px;
+  border-bottom: 2px solid black;
+  display: inline-block;
+  padding-bottom: 3px;
+}
+
+.about-content p {
+  margin-bottom: 20px;
+  font-size: 15px;
+  color: #333;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- [Buttons] --- */
+
+/* Method Tabs */
 .method-tabs {
   display: flex;
-  gap: 5px;
-  width: 250px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .method-btn {
-  padding: 12px 12px;
+  flex: 1;
+  padding: 12px 0;
+  background: white;
   border: 1px solid black;
-  background: transparent;
-  color: #000000;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: bold;
-  transition: all 0.2s ease;
+  font-family: "Orbit", sans-serif;
+  font-size: 13px;
+  transition: all 0.2s;
 }
 
 .method-btn:hover {
   background: #f0f0f0;
-  color: black;
 }
 
 .method-btn.active {
   background: black;
   color: white;
-  border-color: black;
 }
 
-/* --- [5. Navigation & Header] --- */
+/* Navigation Buttons */
+.new-page {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
 .about-list {
-  font-weight: 100;
-  font-size: 20px;
-  position: relative;
-  color: rgba(66, 66, 66, 0.4);
-  transition: color 0.3s ease;
-  margin-top: 20px;
-  border: none;
+  flex: 1;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid black;
+  background: white;
+  color: black;
+  font-size: 14px;
+  font-weight: normal;
+  margin: 0;
+  cursor: pointer;
+  transition: all 0.2s;
 }
-
-.about-list:first-child {
-  margin-top: 0px;
-} 
 
 .about-list:hover {
-  color: #000;
-  cursor: pointer;
-}
-
-.about-list:nth-child(2){
-  font-size: 19px;
-}
-
-.new-page{
-  width: 250px;
-  margin-top: 30px;
-  justify-content: space-between;
+  background: black;
+  color: white;
 }
 
 
-/* --- [6. Responsive Design] --- */
-
-/* Tablet & Small Desktop */
-@media screen and (max-width: 1200px) {
-  .fade-in {
-    grid-template-columns: repeat(2, 1fr); /* 2열로 변경 */
-    gap: 30px;
-  }
-}
-
-/* Mobile */
+/* --- [Mobile Styles] --- */
 @media screen and (max-width: 768px) {
-  .ar-main {
-    flex-direction: column; /* 모바일에서는 세로 배치 */
+  .about-container {
+    height: 100vh;
+    overflow: hidden;
   }
 
-  .box3 {
-    width: 100%;
-    height: auto;
-    margin-bottom: 30px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 20px;
-    justify-content: center;
-  }
-
-  .fade-in {
-    grid-template-columns: 1fr; /* 1열로 변경 */
-    gap: 20px;
-  }
-
-  .ho-title-container {
-    padding: 15px;
-  }
-
-  .about-logo img {
-    height: 30px;
-  }
-
-  .method-btn {
-    flex: 1; /* 버튼 꽉 차게 */
-    text-align: center;
-  }
-}
-
-/* Small Mobile */
-@media screen and (max-width: 480px) {
-  .ho-title-container {
+  .about-title-container {
     padding: 10px;
+    height: 80px;
   }
 
   .about-logo img {
-    height: 25px;
+    height: 60px;
+    transform: translateY(0);
   }
 
+  .ar-main {
+    flex-direction: column;
+    padding: 0 15px;
+    gap: 0;
+    height: calc(100vh - 80px);
+    position: relative;
+  }
+
+  /* 본문 스크롤 영역 */
   .about-content {
-    padding: 0; /* 모바일에서 패딩 제거 */
+    border: none;
+    padding: 15px 5px;
+    /* [중요] 하단 패널 높이만큼 여백 확보 */
+    padding-bottom: 200px; 
+    height: 100%;
+    overflow-y: auto;
   }
 
-  .about-content h3 {
-    padding-left: 0;
-    border-left: none;
-    border-bottom: 2px solid black;
-    display: inline-block;
+  /* [중요] 하단 고정 컨트롤 패널 (.box3) */
+  .box3 {
+        position: fixed;
+        bottom: 8%;
+        left: 0;
+        top: auto;
+        width: 50%;
+        height: auto;
+        z-index: 2000;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 15px 20px 30px 20px;
+        order: 2;
   }
 
-  .about-list{
-    font-size: 13px;
-    background-color: white;
-    border: 1px solid black;
-    color: black;
-    padding: 5px;
-    margin-top: 10px;
-    display: inline-block;
-    margin-right: 10px;
+  /* 설명글 숨기기 (공간 확보) */
+  .intro {
+    display: none;
+  }
+
+  /* 1. Method 버튼 (상단, 50:50 비율) */
+  .method-tabs {
+    width: 100%;
+    margin: 0;
+    display: flex;
+    gap: 10px;
   }
   
+  .method-btn {
+    height: 60px; /* 터치하기 좋은 높이 */
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  /* 2. 네비게이션 버튼 (하단) */
   .new-page {
     width: 100%;
+    margin: 0;
+    display: flex;
+    gap: 10px;
+  }
+
+  .about-list {
+    height: 44px;
+    font-size: 13px;
+    box-shadow: none;
+        box-shadow: 2px 2px 0px rgba(0,0,0,1); 
+  }
+
+  /* 비율 조정: Archive(짧음) 1 : Collected(김) 2 */
+  .about-list:first-child {
+    flex: 1; /* Archive */
+    
+  }
+  .about-list:last-child {
+    flex: 2; /* Collected Graphics */
+  }
+
+  /* 터치 효과 */
+  .method-btn:active,
+  .about-list:active {
+    opacity: 0.7;
+    transform: scale(0.98);
   }
 }
