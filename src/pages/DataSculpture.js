@@ -177,7 +177,7 @@ export default function DataSculpture({ imageUrl }) {
           position: 'absolute', bottom: '20px', right: '20px',
           background: recording ? 'red' : 'rgba(255,255,255,0.1)', color: 'white',
           border: '1px solid white', padding: '8px 16px',
-          fontFamily: "'Courier New', monospace", fontSize: '12px', cursor: 'pointer',
+          fontSize: '12px', cursor: 'pointer',
           zIndex: 10, backdropFilter: 'blur(4px)', transition: 'all 0.3s'
         }}
       >

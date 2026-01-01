@@ -15,9 +15,6 @@ function About() {
         </div>
       </div>
 
-
-      
-
       <div className="ar-main">
         <div className="box3">
           <div className="intro">

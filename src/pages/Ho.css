@@ -322,8 +322,7 @@
   }
 
   .ho-logo img {
-    height: 60px;
-    transform: translateY(0);
+  margin-left: 10%;
   }
 
   .ho-title-container {

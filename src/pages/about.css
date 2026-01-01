@@ -158,15 +158,12 @@
     overflow: hidden;
   }
 
-  .about-title-container {
-    padding: 10px;
-    height: 80px;
-  }
 
   .about-logo img {
-    height: 60px;
+    margin-left: 50%;
     transform: translateY(0);
   }
+  
 
   .ar-main {
     flex-direction: column;
