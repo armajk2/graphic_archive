@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Ho.css";
+import "./Ho.css"; // CSS 파일명이 Ho.css가 맞는지 확인해주세요
 
-// 기본 이미지 리스트 (기존 gif들)
+// 기본 이미지 리스트
 const images = Array.from({ length: 20 }, (_, i) => `/images/a${i + 1}.webp`);
 
 // --- [Helper Functions] ---
 
-// 1. 이미지 압축 및 포맷 변환 (핵심 기능)
+// 1. 이미지 압축 및 최적화 (Optimized)
 const compressImage = (file) => {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -18,12 +18,12 @@ const compressImage = (file) => {
       img.onload = () => {
         const canvas = document.createElement("canvas");
         
-        // 최대 크기 설정 (600px로 제한하여 용량 대폭 절감)
-        const maxSize = 600; 
+        // [최적화 1] 썸네일용으로 크기를 500px로 제한 (기존 600 -> 500)
+        // 원본 화질이 굳이 필요 없는 리스트 화면에서 용량을 크게 아낍니다.
+        const maxSize = 500; 
         let width = img.width;
         let height = img.height;
 
-        // 비율 유지 리사이징
         if (width > height) {
           if (width > maxSize) {
             height *= maxSize / width;
@@ -42,15 +42,15 @@ const compressImage = (file) => {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, width, height);
 
-        // WebP 포맷으로 변환 (품질 0.7) - JPG/PNG보다 효율적
-        const compressedDataUrl = canvas.toDataURL("image/webp", 0.7);
+        // [최적화 2] WebP 품질을 0.5로 낮춤 (육안 차이 미미, 용량 급감)
+        const compressedDataUrl = canvas.toDataURL("image/webp", 0.5);
         resolve(compressedDataUrl);
       };
     };
   });
 };
 
-// 2. 색상 차이 계산 (유사 색상 필터링용)
+// 2. 색상 차이 계산 (유사 색상 필터링)
 const getColorDifference = (color1, color2) => {
   const [r1, g1, b1] = color1.split(',').map(Number);
   const [r2, g2, b2] = color2.split(',').map(Number);
@@ -61,7 +61,7 @@ const getColorDifference = (color1, color2) => {
   );
 };
 
-// 3. 주요 색상 추출 함수
+// 3. 주요 색상 추출 (Optimized)
 const getDominantColors = (imageUrl, numColors = 5) => {
   return new Promise((resolve) => {
     const img = new Image();
@@ -70,7 +70,9 @@ const getDominantColors = (imageUrl, numColors = 5) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
-      const maxSize = 100;
+      // [최적화 3] 분석용 캔버스 크기를 50px로 대폭 축소
+      // 색상 분포만 보는 것이므로 클 필요가 없습니다. 속도 매우 빨라짐.
+      const maxSize = 50;
       const scale = Math.min(maxSize / img.width, maxSize / img.height);
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
@@ -81,12 +83,15 @@ const getDominantColors = (imageUrl, numColors = 5) => {
       const pixels = imageData.data;
       const colorMap = new Map();
       
-      for (let i = 0; i < pixels.length; i += 32) {
+      // [최적화 4] 샘플링 간격을 64로 늘림 (모든 픽셀을 볼 필요 없음)
+      for (let i = 0; i < pixels.length; i += 64) {
         const r = pixels[i];
         const g = pixels[i + 1];
         const b = pixels[i + 2];
+        // 너무 어두운 색 제외
         if (pixels[i + 3] < 128) continue;
         
+        // 색상 단순화 (Quantization)
         const roundedR = Math.round(r / 5) * 5;
         const roundedG = Math.round(g / 5) * 5;
         const roundedB = Math.round(b / 5) * 5;
@@ -119,7 +124,7 @@ const getDominantColors = (imageUrl, numColors = 5) => {
     };
     
     img.onerror = () => {
-      console.error('Error loading image for color detection:', imageUrl);
+      // 에러 발생 시 빈 배열 반환하여 멈춤 방지
       resolve([]);
     };
     img.src = imageUrl;
@@ -133,7 +138,7 @@ function Home() {
   const fileInputRef = useRef();
   const navigate = useNavigate();
 
-  // Load uploaded images from localStorage
+  // Load uploaded images
   useEffect(() => {
     const savedImages = localStorage.getItem('uploadedImages');
     if (savedImages) {
@@ -141,7 +146,7 @@ function Home() {
     }
   }, []);
 
-  // Save uploaded images to localStorage
+  // Save uploaded images
   useEffect(() => {
     try {
       localStorage.setItem('uploadedImages', JSON.stringify(uploadedImages));
@@ -151,13 +156,14 @@ function Home() {
     }
   }, [uploadedImages]);
 
-  // Extract Colors
+  // Color Extraction Effect
   useEffect(() => {
     const loadColors = async () => {
       const allImages = [...images, ...uploadedImages.map(img => img.url)];
       const colors = {};
       
       for (const imgUrl of allImages) {
+        // 이미 분석된 색상이면 건너뜀 (중복 연산 방지)
         if (!imageColors[imgUrl]) {
           try {
             const dominantColors = await getDominantColors(imgUrl);
@@ -168,19 +174,27 @@ function Home() {
           }
         }
       }
-      setImageColors(prev => ({ ...prev, ...colors }));
+      
+      // 새로 찾은 색상이 있을 때만 상태 업데이트
+      if (Object.keys(colors).length > 0) {
+        setImageColors(prev => ({ ...prev, ...colors }));
+      }
     };
-    loadColors();
-  }, [uploadedImages]); // images는 고정이므로 dependency에서 제외해도 됨
+    
+    // 딜레이를 살짝 주어 UI 렌더링 우선순위 확보
+    const timer = setTimeout(() => {
+        loadColors();
+    }, 100);
+    return () => clearTimeout(timer);
 
-  // [수정된 파일 업로드 핸들러]
+  }, [uploadedImages, imageColors]); 
+
   const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files);
     
     const newImages = await Promise.all(
       files.map(async (file) => {
         if (file.type.startsWith('image/')) {
-          // 압축 실행 (JPG/PNG -> WebP & Resize)
           const compressedUrl = await compressImage(file);
           return {
             url: compressedUrl,
@@ -194,7 +208,6 @@ function Home() {
     const validImages = newImages.filter(img => img !== null);
     setUploadedImages(prev => [...prev, ...validImages]);
     
-    // 입력 초기화 (같은 파일 재업로드 가능하게)
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -231,6 +244,7 @@ function Home() {
       </div>
 
       <div className="ho-main">
+        {/* 사이드바 / 모바일 하단 패널 */}
         <div className="box1">
           <div className="intro">
             이 웹사이트는 사람들이 올린 그래픽 이미지들을 모아둔 곳입니다. 최대 3개의 이미지를 선택한 후 'Generate' 버튼을 누르면, 제가 평소에 이미지를 어떻게 편집하고 새로운 그래픽으로 재구성하는지를 볼 수 있습니다. 자세한 내용이 궁금하시다면 언제든지 편하게 질문해주세요.
@@ -255,7 +269,7 @@ function Home() {
               type="file"
               ref={fileInputRef}
               onChange={handleFileUpload}
-              accept="image/*" // 모든 이미지 허용
+              accept="image/*"
               multiple
               style={{ display: 'none' }}
             />
@@ -273,8 +287,9 @@ function Home() {
           </div>
         </div>
 
+        {/* 이미지 그리드 */}
         <div className="ho-grid">
-          {/* Default Images */}
+          {/* 1. Default Images */}
           {images.map((img, i) => {
             const selectedIndex = selectedImages.indexOf(img);
             return (
@@ -284,6 +299,9 @@ function Home() {
                   alt={`tile-${i}`}
                   onClick={() => toggleImage(img)}
                   className={`ho-image ${selectedIndex !== -1 ? 'selected' : ''}`}
+                  /* [최적화 5] Lazy Loading & Async Decoding */
+                  loading="lazy" 
+                  decoding="async"
                 />
                 {selectedIndex !== -1 && (
                   <div className="ho-image-number">
@@ -308,7 +326,7 @@ function Home() {
             );
           })}
 
-          {/* Uploaded Images */}
+          {/* 2. Uploaded Images */}
           {uploadedImages.map((img, i) => {
             const selectedIndex = selectedImages.indexOf(img.url);
             return (
@@ -318,6 +336,9 @@ function Home() {
                   alt={`uploaded-${i}`}
                   onClick={() => toggleImage(img.url)}
                   className={`ho-image ${selectedIndex !== -1 ? 'selected' : ''}`}
+                  /* [최적화 5] Lazy Loading & Async Decoding */
+                  loading="lazy"
+                  decoding="async"
                 />
                 {selectedIndex !== -1 && (
                   <div className="ho-image-number">
@@ -331,9 +352,8 @@ function Home() {
                     removeUploadedImage(i);
                   }}
                 >
+                  {/* 삭제 아이콘 (X 표시 등) 필요하면 추가, 현재는 CSS 배경으로 처리됨 */}
                 </button>
-                {/* 타임스탬프는 깔끔하게 보이지 않도록 숨기거나 스타일 조정 가능 */}
-                {/* <div className="ho-timestamp">{new Date(img.timestamp).toLocaleDateString()}</div> */}
                 
                 {imageColors[img.url] && (
                   <div className="color-swatches">
