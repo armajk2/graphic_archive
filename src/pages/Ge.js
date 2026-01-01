@@ -226,11 +226,11 @@ function Generate() {
 
   // [Download 핸들러 - 수정됨]
   const handleDownload = async () => {
-    if (currentView === '3d') { 
+    if (currentView === '3d') {
         alert("Use the 'RECORD' button in 3D view to save video."); 
-        return; 
+        return;
     }
-    
+
     // 1. 현재 캔버스(원본) 가져오기
     const originalUrl = canvasRef.current.toDataURL("image/png");
 

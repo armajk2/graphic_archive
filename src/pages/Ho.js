@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./Ho.css";
 
 // 기본 이미지 리스트 (기존 gif들)
-const images = Array.from({ length: 23 }, (_, i) => `/images/a${i + 1}.gif`);
+const images = Array.from({ length: 21 }, (_, i) => `/images/a${i + 1}.webp`);
 
 // --- [Helper Functions] ---
 
