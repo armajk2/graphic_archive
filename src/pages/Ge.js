@@ -250,56 +250,15 @@ function Generate() {
   return (
     <div className="ge-container">
       <div className="ge-title-container">
-        <img src="/images/logo.gif" alt="Graphic Archive" style={{ height: '100px', width: 'auto', objectFit: 'contain',  transform: 'translateY(30px)' }} />
+        <img src="/images/logo.gif" alt="Graphic Archive" style={{ height: '100px', width: 'auto', objectFit: 'contain', transform: 'translateY(30px)' }} />
       </div>
 
       <div className="ge-main">
-        <div className="ge-box1">
-          <div className="ge-effects-panel">
-            <div style={{ marginBottom: '20px' }}>
-                <h3>ANALYSIS LAYERS</h3>
-                <div className="ge-layer-buttons">
-                    <button className={`ge-layer-btn ${currentView === 'source' ? 'active' : ''}`} onClick={() => setCurrentView('source')}>SOURCES</button>
-                    <button className={`ge-layer-btn ${currentView === 'layer1' ? 'active' : ''}`} onClick={() => setCurrentView('layer1')}>HUD</button>
-                    <button className={`ge-layer-btn ${currentView === 'layer2' ? 'active' : ''}`} onClick={() => setCurrentView('layer2')}>TEXTURE</button>
-                    <button className={`ge-layer-btn ${currentView === 'layer3' ? 'active' : ''}`} onClick={() => setCurrentView('layer3')}>CONTOUR</button>
-                    <button className={`ge-layer-btn final ${currentView === 'final' ? 'active' : ''}`} onClick={() => setCurrentView('final')}>FINAL VIEW</button>
-                    <button className={`ge-layer-btn final ${currentView === '3d' ? 'active' : ''}`} onClick={switchTo3D} style={{ marginTop: '5px' }}>3D VIEW (CURRENT)</button>
-                </div>
-            </div>
-
-            <h3>DISPLAY PARAMS</h3>
-            {currentView === '3d' ? (
-              <div style={{ fontSize: '12px', color: '#666', padding: '10px 0', borderTop: '1px solid #eee', paddingTop: '10px' }}>
-                <p><strong>3D MODE ACTIVE</strong></p>
-                <p>Data visualization initialized.</p>
-                <p>Status: Monitoring...</p>
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-                <div>
-                  <label style={{ fontSize: "12px", fontFamily: "monospace" }}>NOISE_LEVEL: {effects.grain.intensity}</label>
-                  <input type="range" min="0" max="50" step="5" value={effects.grain.intensity} onChange={(e) => setEffects(p => ({...p, grain: {...p.grain, intensity: Number(e.target.value)}}))} style={{ width: "100%" }} />
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="ge-button-container">
-            <button onClick={handleBack} className="ge-button ge-button-back">BACK</button>
-            <button onClick={handleArchive} className="ge-button ge-button-archive" disabled={currentView === '3d'} style={currentView === '3d' ? { opacity: 0.5, cursor: 'not-allowed' } : {}}>
-                {currentView === '3d' ? "ARCHIVE (2D ONLY)" : "ARCHIVE"}
-            </button> 
-            <button onClick={handleRegenerate} className="ge-button ge-button-regenerate">RE-ANALYZE</button>
-            <button onClick={handleDownload} className="ge-button ge-button-download">EXPORT DATA</button>
-          </div>
-        </div>
-
+        {/* --- [1. 캔버스 영역] --- */}
         <div className="ge-canvas-container">
           {currentView === '3d' ? (
              <div style={{ 
-                 width: '100%', height: '100%', aspectRatio: '1/1', maxHeight: '90vh', maxWidth: '90vh',
-                 boxShadow: '0 20px 50px rgba(0,0,0,0.15)', border: '1px solid #000',
+                 width: '100%', height: '100%', 
                  overflow: 'hidden', background: 'black', position: 'relative'
                }}>
                 {/* 3D 뷰어 (녹화 가능) - 영수증 오버레이 제거됨 */}
@@ -308,6 +267,47 @@ function Generate() {
           ) : (
              <canvas ref={canvasRef} width={1080} height={1080} className="ge-canvas" style={{ opacity: isFading ? 0.2 : 1 }} />
           )}
+        </div>
+
+        {/* --- [2. 조작 패널 영역 (ge-box1에서 밖으로 꺼냄!)] --- */}
+        <div className="ge-effects-panel">
+          <div style={{ marginBottom: '20px' }}>
+              <h3>ANALYSIS LAYERS</h3>
+              <div className="ge-layer-buttons">
+                  <button className={`ge-layer-btn ${currentView === 'source' ? 'active' : ''}`} onClick={() => setCurrentView('source')}>SOURCES</button>
+                  <button className={`ge-layer-btn ${currentView === 'layer1' ? 'active' : ''}`} onClick={() => setCurrentView('layer1')}>HUD</button>
+                  <button className={`ge-layer-btn ${currentView === 'layer2' ? 'active' : ''}`} onClick={() => setCurrentView('layer2')}>TEXTURE</button>
+                  <button className={`ge-layer-btn ${currentView === 'layer3' ? 'active' : ''}`} onClick={() => setCurrentView('layer3')}>CONTOUR</button>
+                  <button className={`ge-layer-btn final ${currentView === 'final' ? 'active' : ''}`} onClick={() => setCurrentView('final')}>FINAL VIEW</button>
+                  <button className={`ge-layer-btn final ${currentView === '3d' ? 'active' : ''}`} onClick={switchTo3D} style={{ marginTop: '5px' }}>3D VIEW (CURRENT)</button>
+              </div>
+          </div>
+
+          <h3>DISPLAY PARAMS</h3>
+          {currentView === '3d' ? (
+            <div style={{ fontSize: '12px', color: '#666', padding: '10px 0', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+              <p><strong>3D MODE ACTIVE</strong></p>
+              <p>Data visualization initialized.</p>
+              <p>Status: Monitoring...</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+              <div>
+                <label style={{ fontSize: "12px", fontFamily: "monospace" }}>NOISE_LEVEL: {effects.grain.intensity}</label>
+                <input type="range" min="0" max="50" step="5" value={effects.grain.intensity} onChange={(e) => setEffects(p => ({...p, grain: {...p.grain, intensity: Number(e.target.value)}}))} style={{ width: "100%" }} />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* --- [3. 버튼 영역 (ge-box1에서 밖으로 꺼냄!)] --- */}
+        <div className="ge-button-container">
+          <button onClick={handleBack} className="ge-button ge-button-back">BACK</button>
+          <button onClick={handleArchive} className="ge-button ge-button-archive" disabled={currentView === '3d'} style={currentView === '3d' ? { opacity: 0.5, cursor: 'not-allowed' } : {}}>
+              {currentView === '3d' ? "ARCHIVE (2D ONLY)" : "ARCHIVE"}
+          </button> 
+          <button onClick={handleRegenerate} className="ge-button ge-button-regenerate">RE-ANALYZE</button>
+          <button onClick={handleDownload} className="ge-button ge-button-download">EXPORT DATA</button>
         </div>
       </div>
     </div>

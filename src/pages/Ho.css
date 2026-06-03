@@ -1,491 +1,234 @@
+/* --- [Container & Layout] --- */
 .ho-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative; /* 하단 패널 고정을 위한 기준점 */
+  background: white;
+  overflow: hidden; /* 페이지 전체 스크롤 방지 */
+}
+
+/* --- [Header] --- */
+.ho-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 20px;
+  background: white;
+  border-bottom: 1px solid #000;
+  height: 80px;
+  flex-shrink: 0;
+}
+
+.ho-logo img {
+  height: 60px;
+  width: auto;
 }
 
 .ho-title-container {
-  display: flex;
-  justify-content: space-between;
-  max-width: 1200px;
-  height: 150px;
-  border-bottom: 1px solid #eee;
-  flex-shrink: 0;
-  padding: 20px;
+  display: none; /* 모바일 환경에서는 헤더(로고)로 역할을 대체하고 타이틀 숨김 */
 }
 
+/* --- [Main Layout & Grid] --- */
 .ho-main {
   display: flex;
+  flex-direction: column; /* 세로로 블록을 쌓음 */
   flex: 1;
-  overflow: hidden;
-  padding: 20px;
-  gap: 40px;
+  overflow: hidden; /* 전체 페이지 스크롤 방지 */
 }
+
+
 
 .box1 {
-  width: 300px;
-  height: 91%;
-  text-align: left;
+  order: 2; /* 무조건 아래쪽에 배치 */
+  flex-shrink: 0; /* 화면이 좁아져도 버튼 영역 높이는 절대 안 찌그러지게 고정 */
+  
+  /* position: absolute; <-- 이거 삭제됨! (겹침의 원인) */
+  width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  gap: 10px;
+  background: white; /* 겹치지 않으므로 그냥 100% 흰색 배경 */
+  padding: 15px 20px 25px 20px; 
+  border-top: 1px solid #000; /* 스크롤 영역과 구분을 위해 얇은 테두리 추가 */
+  z-index: 10;
 }
 
-.new-page {
-  padding: 20px;
-  border: 1px solid black;
-  width: 250px;
-  margin-top: 34px;
+/* 데스크탑 전용 설명 텍스트 숨김 */
+.intro, .ho-selection-info {
+  display: none;
 }
 
-.intro {
-  position: absolute;
-  top: 20%;
-  border: 1px solid black;
-  padding: 20px;
-  width: 250px;
-  word-break: keep-all;
-  font-size: 15px;
-  text-align-last: left;
-  -moz-text-align-last: right;
-}
-
-.ho-title {
-  text-align: center;
-  color: #c81a1a;
-  overflow: hidden;
-  white-space: nowrap;
-  font-size: 48px;
-}
-
-.ho-list {
-  font-weight: 100;
-  font-size: 20px;
-  position: relative;
-  color: rgb(66, 66, 66, 0.4);
-  transition: color 0.3s ease;
-  margin-top: 20px;
-}
-
-.ho-list:first-child {
-  margin-top: 0px;
-}
-
-.ho-list:hover {
-  color: #000;
-  cursor: pointer;
-}
-
-.ho-selection-info {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 13px;
-  padding: 6px 24px;
-  width: 250px;
-  background-color: rgb(0, 0, 0);
-  color: rgb(255, 255, 255);
-}
-
-.ho-upload-section {
-  width: 250px;
-  text-align: center;
-}
-
-.ho-upload-button {
-  color: black;
-  padding: 12px 24px;
-  border: none;
-  width: 250px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s;
-  border: 1px solid black;
-  margin-top: 34px;
-  background: white; /* 기본 배경색 추가 */
-}
-
-.ho-upload-button:hover {
-  color: white;
-  background: black; /* hover시 배경색 변경 추가 */
-}
-
+/* 1. 그리드: 높이가 강제로 늘어나는 것을 방지 */
 .ho-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 30px;
-  padding: 20px;
-  overflow-y: auto;
-  height: 94%;
-  align-content: start;
-  flex: 1;
-  grid-auto-rows: min-content;
+  order: 1 !important;
+  flex: 1 !important;
+  overflow-y: auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  grid-auto-rows: max-content !important; /* 이미지 크기만큼만 행 높이를 차지하도록 강제 */
+  align-items: start !important; /* 위로 정렬하여 세로로 늘어나는 현상 방지 */
+  gap: 15px !important;
+  padding: 20px !important;
 }
 
+/* 2. 이미지 컨테이너: 기존 높이 속성을 완전히 무력화하고 1:1 패딩만 적용 */
 .ho-image-container {
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: auto;
-  border: 3px solid black;
-  min-height: 0;
-  background: white; /* 배경색 추가 */
+  position: relative !important;
+  width: 100% !important;
+  
+  /* 잔여 height 속성이 있다면 무력화시킵니다 */
+  height: 0 !important; 
+  min-height: 0 !important;
+  
+  /* 가로 너비와 100% 동일한 정사각형 뼈대를 강제로 생성합니다 */
+  padding-bottom: 100% !important; 
+  
+  background: white !important;
+  border: 1px solid #000 !important;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.1) !important;
+  overflow: hidden !important;
+  display: block !important;
 }
 
-.ho-image {
-  width: 100%;
-  height: 160px;
-  object-fit: cover;
-  cursor: pointer;
-  transition: all 0.3s;
-  flex-shrink: 0;
-  transform-origin: center;
-}
-
-.ho-image:hover {
-  transform: scale(1.1); /* 스케일 약간 축소 */
-}
-
-.ho-image.selected {
-  /* border-color: #ffd666; 이미지가 아닌 컨테이너에 적용하는 것이 좋음 */
-}
-/* 선택된 이미지의 컨테이너 스타일 */
 .ho-image-container:has(.ho-image.selected) {
-    border-color: #ffd666;
+  border-color: #ffd666 !important;
+  border-width: 2px !important;
 }
+
+/* 3. 실제 이미지: 숨어있는 height: 120px 등을 강제로 무시하고 꽉 채움 */
+.ho-image {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  
+  /* 부모 컨테이너의 크기에 무조건 100% 맞추도록 강제합니다 */
+  height: 100% !important; 
+  
+  object-fit: cover !important;
+  display: block !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+}
+
 
 
 .ho-image-number {
   position: absolute;
   top: 8px;
   left: 8px;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   color: white;
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 11px;
+  font-family: "Orbit", sans-serif;
 }
 
 .ho-remove-button {
   position: absolute;
   top: 8px;
   right: 8px;
-  background: rgba(0, 0, 0, 0.7);
-  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #000;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
   display: flex;
-  width: 24px; /* 크기 명시 */
-  height: 24px; /* 크기 명시 */
-  align-items: center; /* 중앙 정렬 */
-  justify-content: center; /* 중앙 정렬 */
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: background-color 0.3s;
-  color: white; /* 아이콘 색상 */
-  border-radius: 50%; /* 둥글게 */
-}
-
-.ho-remove-button:hover {
-  background: rgba(255, 0, 0, 0.7); /* 호버 시 붉은색 */
-}
-
-.ho-generate-button {
-  display: block;
-  padding: 12px 24px;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all 0.3s;
-  border: 1px solid black;
-  text-align: center;
-  width: 250px;
-  background: white; /* 기본 배경 */
   color: black;
+  font-size: 12px;
 }
 
-.ho-generate-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+/* --- [Color Swatches] --- */
+.color-swatches {
+  display: flex;
+  justify-content: center;
+  padding: 8px;
+  background: white;
+  border-top: 1px solid #000;
+  gap: 5px;
+}
+
+.color-swatch {
+  width: 14px;
+  height: 14px;
+  border: 1px solid #000;
+}
+
+
+/* 공통 버튼 영역 리셋 */
+.ho-upload-section, .ho-generate-container {
+  width: 100%;
+}
+
+/* Generate 버튼 (블랙) */
+.ho-generate-button {
+  width: 100%;
+  height: 50px;
+  background: black;
   color: white;
-  background: black; /* hover 배경 */
+  border: 1px solid black;
+  font-family: "Orbit", sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .ho-generate-button:disabled {
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-  background: #eee; /* 비활성 스타일 */
+  background: #eee;
   color: #888;
   border-color: #ccc;
 }
 
-.color-swatches {
-  display: flex;
-  padding: 8px;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.9);
-  border-top: 1px solid #eee;
-  gap: 10px;
-  flex-shrink: 0;
-  position: relative;
-}
-
-.color-swatch {
-  width: 16px;
-  height: 16px;
-  border: 1px solid #ddd;
-  transition: transform 0.2s;
-  position: relative;
+/* Upload 버튼 (화이트) */
+.ho-upload-button {
+  width: 100%;
+  height: 50px;
+  background: white;
+  color: black;
+  border: 1px solid black;
+  font-family: "Orbit", sans-serif;
+  font-size: 14px;
   cursor: pointer;
 }
 
-.color-swatch:hover {
-  transform: scale(1.2);
-  z-index: 1000;
+/* 하단 네비게이션 버튼 (Archive / About) */
+.new-page {
+  display: flex;
+  gap: 10px;
+  width: 100%;
 }
 
-.color-swatch:hover .color-code {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-}
-
-.color-code {
-  position: absolute;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
-  bottom: 130%;
-  left: -200%;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.2s ease;
-  pointer-events: none;
-  z-index: 1001;
-  transform: translateY(10px);
-}
-
-.color-code::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  right: 50%;
-  transform: translateX(-50%);
-  border-width: 4px;
-  border-style: solid;
-  border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
-}
-
-.ho-header {
+.ho-list {
+  height: 44px;
   display: flex;
   align-items: center;
-  padding: 20px 20px 20px 20px;
+  justify-content: center;
+  border: 1px solid black;
   background: white;
-  border-bottom: 1px solid #eee;
+  color: black;
+  font-size: 13px;
+  font-family: "Orbit", sans-serif;
+  margin: 0;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px rgba(0,0,0,1);
+  transition: all 0.1s;
 }
 
-.ho-logo {
-  margin-right: 20px;
-}
+.ho-list:first-child { flex: 2; }
+.ho-list:last-child { flex: 1; }
 
-.ho-logo img {
-  height: 100px;
-  width: auto;
-  transform: translateY(30px);
-}
-
-.ho-nav {
-  display: flex;
-  align-items: center;
-}
-
-/* --- [Mobile Styles] --- */
-/* 여기가 핵심 수정 부분입니다 */
-@media screen and (max-width: 768px) {
-  .ho-container {
-    height: 100vh;
-    overflow: hidden;
-  }
-
-  .ho-header {
-    padding: 10px;
-  }
-
-  .ho-logo img {
-  margin-left: 10%;
-  }
-
-  .ho-title-container {
-    align-items: center;
-    padding: 15px;
-    height: auto; /* 높이 자동 */
-    min-height: 60px;
-  }
-
-  .ho-title {
-    font-size: 32px; /* 폰트 크기 적절히 조절 */
-    text-indent: 0px;
-    position: static; /* fixed 제거 */
-    z-index: auto;
-    top: auto;
-    white-space: normal; /* 긴 제목 줄바꿈 허용 */
-  }
-
-  .ho-main {
-    flex-direction: column;
-    padding: 0 15px;
-    gap: 0;
-    /* 헤더 대략적 높이 제외하고 나머지 */
-    height: calc(100vh - 80px);
-    position: relative;
-  }
-
-  .ho-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 15px;
-    padding: 15px 5px;
-    /* [중요] 하단 패널 높이만큼 여백 확보 */
-    padding-bottom: 250px; 
-    overflow-y: auto;
-    height: 100%;
-  }
-
-  .ho-image {
-    height: 120px;
-  }
-
-  .ho-image:hover {
-    transform: none;
-  }
-
-  .color-swatches {
-    height: auto;
-  }
-
-  /* [중요] 하단 고정 컨트롤 패널 (.box1) */
-  .box1 {
-    /* 화면 맨 아래 고정 */
-    position: fixed;
-    bottom: 8%;
-    left: 0;
-    top: auto; /* 기존 top 속성 무시 */
-    
-    width: 50%;
-    height: auto; /* 내용물만큼 높이 */
-
-    z-index: 2000;
-    
-    /* 내부 레이아웃: 세로 스택 */
-    display: flex;
-    justify-content: flex-end; /* 아래로 정렬 (사실 column이라 큰 의미 없음) */
-    gap: 10px; /* 버튼 간격 */
-    padding: 15px 20px 30px 20px; /* 아이폰 홈바 고려 하단 패딩 */
-    order: 2; /* main 내에서 순서 (의미 없음 fixed라) */
-  }
-
-  /* 데스크탑 요소 숨김 */
-  .intro,
-  .ho-selection-info {
-    display: none;
-  }
-
-  /* 1. Generate 버튼 (검은색) - 가장 위 */
-  .ho-generate-container {
-    width: 100%;
-    margin: 0;
-    order: 1;
-  }
-  
-  /* [핵심 수정] fixed 제거하고 꽉 차게 */
-  .ho-generate-button {
-    position: static; /* fixed 제거 -> 부모 흐름 따름 */
-    bottom: auto; right: auto; z-index: auto; /* 위치값 초기화 */
-
-    width: 100%;
-    height: 50px;
-    background: black;
-    color: white;
-    border: 1px solid black;
-    margin: 0;
-    font-size: 14px;
-    font-weight: bold;
-    box-shadow: none;
-  }
-
-  /* 2. Upload 버튼 (흰색) - 중간 */
-  .ho-upload-section {
-    width: 100%;
-    margin: 0;
-    order: 2;
-  }
-
-  /* [핵심 수정] fixed 제거하고 꽉 차게 */
-  .ho-upload-button {
-    position: static; /* fixed 제거 */
-    bottom: auto; left: auto; z-index: auto; /* 위치값 초기화 */
-
-    width: 100%;
-    height: 50px;
-    background: white;
-    color: black;
-    border: 1px solid black;
-    margin: 0;
-    font-size: 14px;
-    box-shadow: none;
-  }
-
-  /* 3. 하단 네비게이션 - 가장 아래 (위치 유지) */
-  .new-page {
-    width: 100%;
-    border: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    gap: 10px;
-    position: static; /* fixed 제거 (box1 안에 포함됨) */
-    order: 3;
-  }
-
-  .ho-list {
-    height: 44px; /* 네비게이션은 조금 얇게 */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid black;
-    background: white;
-    color: black;
-    font-size: 14px;
-    font-weight: normal;
-    margin: 0;
-    box-shadow: none;
-        /* 그림자 추가해서 버튼 느낌 내기 (선택사항) */
-    box-shadow: 2px 2px 0px rgba(0,0,0,1); 
-  }
-
-  .ho-list:first-child {
-    flex: 2;
-    margin-top: 0;
-  }
-
-  .ho-list:last-child {
-    flex: 1;
-  }
-
-  /* 터치 피드백 */
-  .ho-generate-button:active,
-  .ho-upload-button:active,
-  .ho-list:active {
-    opacity: 0.7;
-    transform: scale(0.98);
-  }
+/* 버튼 터치 액션 공통 */
+.ho-list:active, .ho-generate-button:active, .ho-upload-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
 }

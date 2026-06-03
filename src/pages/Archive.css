@@ -1,104 +1,80 @@
+/* --- [Container & Layout] --- */
 .ar-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  height: 100vh; /* min-height 대신 height로 고정하여 스크롤 영역을 내부에 가둠 */
+  width: 100%;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* 전체 페이지 스크롤 방지 (내부 스크롤 사용) */
+  position: relative; /* 하단 네비게이션 바의 기준점 */
+  background: white;
+  overflow: hidden; /* 페이지 전체 스크롤 방지 */
 }
 
+/* --- [Header] --- */
+/* about.css와 동일한 헤더 규격으로 통일감 부여 */
+.archive-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 20px;
+  background: white;
+  border-bottom: 1px solid #000;
+  height: 80px;
+  flex-shrink: 0;
+}
+
+.archive-logo img {
+  height: 60px;
+  width: auto;
+}
+
+.archive-nav {
+  display: none; /* 모바일 구조이므로 상단 네비게이션은 숨기거나 필요시 삭제 */
+}
+
+/* --- [Main Content & Scrollable Grid] --- */
 .ar-main {
   display: flex;
+  flex-direction: column;
   flex: 1;
-  overflow: hidden; /* 자식 요소들이 넘치지 않게 */
-  padding: 20px;
-  gap: 40px;
-  height: 100%; /* 부모 높이 상속 */
-}
-
-/* --- [Sidebar Fix] --- */
-.ar-box1 {
-  width: 300px;
-  flex-shrink: 0; /* [중요] 화면이 좁아져도 절대 찌그러지지 않음 */
-  display: flex;
-  flex-direction: column;     
-  justify-content: flex-end; /* 내용은 아래로 정렬 */
-  text-align: left;
-  
-  /* 높이 계산 수정: 91% 대신, 헤더와 패딩을 뺀 나머지 공간을 꽉 채움 */
-  height: 100%; 
-  overflow-y: auto; /* 만약 사이드바 내용이 길어지면 스크롤 */
-}
-
-.new-page {
-  padding: 20px;
-  border: 1px solid black;
-  width: 250px;
-  margin-top: 34px;
-}
-
-
-.ar-list {
-  font-weight: 100;
-  font-size: 20px;
   position: relative;
-  padding: 10px;
-  color: rgb(66, 66, 66,0.4);
-  transition: color 0.3s ease;
-  margin-top: 20px;
-}
-
-.ar-list:first-child {
-  margin-top: 0px;
-  font-size: 19px;
-}
-
-.ar-list:hover {
-  color: #000;
-  cursor: pointer;
+  overflow: hidden;
 }
 
 .ar-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 30px;
+  display: flex;
+  flex-direction: column; /* 1단 세로 리스트로 변경 */
+  gap: 20px;
   padding: 20px;
-  overflow-y: auto;
-  height: 94%;
-  align-content: start;
+  padding-bottom: 120px; /* 하단 네비게이션 버튼(new-page)이 마지막 아이템을 가리지 않게 넉넉한 여백 */
+  overflow-y: auto; /* 리스트 내부 스크롤 */
   flex: 1;
-  grid-auto-rows: min-content; /* 아이템 높이가 달라져도 자연스럽게 배치 */
 }
 
+/* --- [Archive Items] --- */
 .ar-item {
   position: relative;
-  overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  transition: transform 0.3s;
   display: flex;
   flex-direction: column;
   width: 100%;
-  height: auto;
-  min-height: 0;
-  background: white; /* 배경색 명시 */
-  border: 1px solid #eee; /* 카드 테두리 추가 */
+  background: white;
+  border: 1px solid #000; /* 조금 더 선명한 외곽선 */
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.1); /* 미세한 그림자 */
+  overflow: hidden;
 }
 
-/* [핵심 수정 1] 이미지와 3D 뷰를 감싸는 래퍼 */
 .ar-image-wrapper {
   width: 100%;
-  height: 300px; /* 기본 높이 (2D 이미지일 때) */
-  transition: height 0.3s ease; /* 높이 변경 애니메이션 */
-  overflow: hidden;
+  height: 250px; /* 기본 높이 */
   background-color: black;
+  transition: height 0.3s ease;
+  overflow: hidden;
 }
 
-/* [핵심 수정 2] 3D 모드(.is-3d)일 때 높이 확장 */
+/* 3D 뷰 모드일 때 캔버스 높이 확장 */
 .ar-item.is-3d .ar-image-wrapper {
-  height: 500px; /* 3D 뷰일 때 높이를 500px로 늘림 */
+  height: 400px;
 }
 
-/* 이미지 스타일: 래퍼에 꽉 차게 */
 .ar-image {
   width: 100%;
   height: 100%; 
@@ -107,41 +83,39 @@
 }
 
 .ar-info {
-  padding: 15px; /* 내부 여백 추가 */
+  padding: 15px;
   background: white;
-  border-top: 1px solid black; /* 이미지와 정보 사이 구분선 */
+  border-top: 1px solid black;
 }
 
 .ar-date {
-  font-size: 14px;
+  font-size: 13px;
   color: #666;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
+  font-family: "Orbit", sans-serif;
 }
 
 .ar-effects {
   font-size: 14px;
-  color: #333;
+  color: #000;
   margin-bottom: 15px;
 }
 
 .ar-actions {
   display: flex;
-  gap: 10px; /* 버튼 간격 조정 */
-  justify-content: space-between;
+  gap: 10px;
 }
 
-/* [핵심 수정 3] 버튼 스타일 통합 (Download, 3D, Delete 공통) */
 .ar-button {
-  padding: 8px 0;
-  border: 0.1px solid black;
+  flex: 1; /* 버튼들이 동일한 너비를 가짐 */
+  padding: 10px 0;
+  border: 1px solid black;
   background: white;
   color: black;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
   font-size: 12px;
-  flex: 1; /* 버튼 3개가 공간을 똑같이 나눠가짐 */
   font-family: "Orbit", sans-serif;
-  text-align: center;
 }
 
 .ar-button:hover, .ar-button.active {
@@ -149,142 +123,55 @@
   color: white;
 }
 
-/* 삭제 버튼 포인트 (선택사항) */
 .ar-button-delete:hover {
   background: #ff4d4d;
-  border-color: #ff4d4d;
   color: white;
+  border-color: #ff4d4d;
 }
 
+/* --- [Bottom Navigation (기존 ar-box1)] --- */
+/* fixed 대신 absolute를 써서 핸드폰 틀 안에 갇히게 함 */
+.ar-box1 {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  z-index: 100;
+  /* background: rgba(255,255,255,0.9); 필요시 배경 블러 처리 가능 */
+}
 
-/* --- Header --- */
-.archive-header {
+.new-page {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.ar-list {
+  height: 44px;
   display: flex;
   align-items: center;
-  padding: 20px;
+  justify-content: center;
+  border: 1px solid black;
   background: white;
-  border-bottom: 1px solid #eee;
+  color: black;
+  font-size: 13px;
+  font-family: "Orbit", sans-serif;
+  margin: 0;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px rgba(0,0,0,1);
+  transition: all 0.1s;
 }
 
-.archive-logo {
-  margin-right: 20px;
+/* 비율 조정 (유저님 모바일 세팅 반영) */
+.ar-list:first-child {
+  flex: 2; /* Archive 버튼 넓게 */
 }
-
-.archive-logo img {
-  height: 100px;
-  width: auto;
-  transform: translateY(30px);
-}
-
-.archive-nav {
-  display: flex;
-  align-items: center;
-}
-
-
-/* --- Responsive styles --- */
-@media screen and (max-width: 768px) {
-  .ar-container {
-    height: auto;
-    min-height: 100vh;
-  }
-
-
-/* 버튼 컨테이너: 화면 하단 중앙에 떠있게 */
-  .new-page {
-    display: flex;
-    position: fixed;
-    z-index: 999;
-    
-    /* 150px은 너무 좁습니다. 화면의 90% 정도 차지하게 넓힙니다 */
-    width: 90%; 
-    max-width: 350px; /* 너무 커지진 않게 제한 */
-    
-    /* 화면 중앙 정렬 */
-    left: 50%;
-    transform: translateX(-50%);
-    
-    /* 아이폰 하단 바(Home indicator)와 겹치지 않게 띄움 */
-    bottom: 30px; 
-    
-    padding: 0;
-    gap: 10px; /* 버튼 사이 간격 */
-    border: none;
-    align-items: center; /* 수직 중앙 정렬 */
-  }
-
-  
-  /* 개별 버튼 스타일 */
-  .ar-list {
-    
-    /* 터치하기 좋은 높이 (44px 이상 권장) */
-    height: 50px; 
-    
-    /* 텍스트 정렬 */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-    border: 1px solid black; 
-    background: white;
-    color: black;
-    
-    /* 폰트 키움 (11px -> 14px) */
-    font-size: 13px; 
-    font-weight: normal; /* h1 태그라 두꺼울 수 있으니 조정 */
-    margin: 0; /* h1 태그 기본 마진 제거 */
-    
-    /* 그림자 추가해서 버튼 느낌 내기 (선택사항) */
-    box-shadow: 2px 2px 0px rgba(0,0,0,1); 
-  }
-
-  /* 첫 번째 버튼 별도 스타일 제거 (통일감) */
-  .ar-list:first-child {
-    font-size: 12px;
-    margin-top: 0;
-    flex: 2; /* 공간을 2만큼 차지 */
-  }
-
-  /* 두 번째 버튼 (About) : 더 좁게 */
 .ar-list:last-child {
-  flex: 1; /* 공간을 1만큼 차지 */
-  /* 필요하다면 About 글자 간격을 살짝 넓혀서 밀도를 맞춤 */
-  letter-spacing: 1px; 
+  flex: 1; /* About 버튼 좁게 */
 }
 
-  .ar-main {
-    flex-direction: column;
-    padding: 15px;
-    gap: 20px;
-    padding-bottom: 60px; /* 하단 메뉴 가림 방지 */
-  }
-
-  .ar-box1 {
-    width: 100%;
-    order: 2;
-    height: auto;
-  }
-
-  .ar-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 15px;
-    overflow: visible;
-  }
-
-  /* 모바일에서도 3D 뷰 높이는 확보 */
-  .ar-image-wrapper {
-    height: 250px;
-  }
-  .ar-item.is-3d .ar-image-wrapper {
-    height: 400px; /* 모바일에서는 조금 작게 */
-  }
-
-  .ar-button {
-    width: 100%;
-  }
-
-  .archive-logo {
-  margin-left: 10%;
-}
+/* 터치했을 때 눌리는 효과 */
+.ar-list:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
 }

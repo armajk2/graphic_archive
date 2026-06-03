@@ -1,450 +1,215 @@
+/* --- [Container & Layout] --- */
 .ge-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   height: 100vh;
   display: flex;
   flex-direction: column;
+  background: white;
+  overflow: hidden; 
 }
 
+/* --- [박스 모델 폭주 방지 공통 설정] --- */
+.ge-container,
+.ge-container * {
+  box-sizing: border-box !important;
+}
+
+/* 컨테이너가 화면 너비(100%)를 절대 넘지 못하게 강력 통제 */
+.ge-main, 
+.ge-canvas-container, 
+.ge-effects-panel, 
+.ge-button-container {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+/* --- [Header] --- */
 .ge-title-container {
   display: flex;
-  justify-content: space-between;
-  max-width: 1200px;
-  height: 150px;
-  border-bottom: solid 1px black;
-  flex-shrink: 0;
-  padding: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 20px;
+  background: white;
+  border-bottom: 1px solid #000;
+  height: 80px;
+  flex-shrink: 0; 
+  z-index: 20;
 }
 
-
-
+/* --- [Main Layout: 여기서 1080px 폭주를 완벽히 막습니다] --- */
 .ge-main {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-  padding: 20px;
-  gap: 40px;
+  display: grid !important;
+  
+  /* [핵심 마법] 1fr 대신 minmax(0, 1fr)을 써야 캔버스의 1080px 고집을 꺾고 남은 공간에 억지로 맞춥니다! */
+  grid-template-rows: minmax(0, 1fr) auto auto !important; 
+  
+  flex: 1 !important;
+  min-height: 0 !important; /* 컨테이너 밖으로 밀려나는 것 방지 */
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
-.ge-box1 {
-  width: 250px;
-  text-align: left;
-  height: 91%;
-  display: flex;
-  flex-direction: column;     
-  justify-content: flex-end;  
-}
-
-.ge-title {
-  text-align: center;
-  color: #c81a1a;
-  overflow: hidden;
-  white-space: nowrap;
-  text-indent: -20px;
-  font-size: 48px;    
-}
-
-.ge-list {
-  font-weight: 100;
-  font-size: 20px;
-  position: relative;
-  color: rgb(66, 66, 66,0.4);
-  transition: color 0.3s ease;
-  margin-top: 20px;
-}
-
-.ge-list:hover {
-  color: #000;
-  cursor: pointer;
-}
-
+/* --- [1. Canvas Area] --- */
 .ge-canvas-container {
-  padding: 20px;
-  height: 94%;
-  align-content: start;
-  flex: 1;
-  grid-auto-rows: min-content;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important; 
+  position: relative !important;
+  background: #000 !important;
 }
 
+/* 캔버스를 공중에 띄워 컨테이너 크기에 강제로 맞춤 */
+.ge-canvas-container canvas,
+.ge-canvas-container > div,
 .ge-canvas {
-  width: 80%;
-  object-fit: cover;
-  transition: all 0.3s;
-  flex-shrink: 0;
-  transform-origin: center;
-  border: 1px solid black;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important; /* 비율 유지하며 꽉 채움 */
+  border: none !important;
+  outline: none !important;
 }
 
+/* --- [2. Effects Panel] --- */
 .ge-effects-panel {
-  padding: 20px;
-  position: absolute;
-  top: 20%;
-  z-Index: 10;
-  color: black;
-  width: 250px;
-  background-color: white;
-  border: solid 1px black;
-}
-
-.ge-video-selection {
-  margin-bottom: 20px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eee;
-}
-
-.ge-video-selection h4 {
-  margin: 0 0 10px 0;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.ge-video-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.ge-video-button {
-  padding: 8px;
-  border: 1px solid black;
-  background: white;
-  color: black;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 14px;
-}
-
-.ge-video-button:hover {
-  background: black;
-  color: white;
-}
-
-.ge-video-button.selected {
-  background: black;
-  color: white;
-}
-
-.ge-button-container {
-  top: 20px;
-  right: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-  z-index: 10;
-}
-
-.ge-button-back {
-  color: black;
-  padding: 12px 24px;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s;
-  border: 1px solid black;
-}
-
-.ge-button-back:hover {
-  color: white;
-}
-
-.ge-button-archive {
-  color: black;
-  padding: 12px 24px;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s;
-  border: 1px solid black;
-}
-
-.ge-button-archive:hover {
-  color: white;
-}
-
-.ge-button-regenerate {
-  display: block;
-  padding: 12px 24px;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all 0.3s;
-  border: 1px solid black;
-}
-
-.ge-button-regenerate:hover {
-  transform: translateY(-2px);
-  color: white;
-}
-
-.ge-button-regenerate:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.ge-button-download {
-  color: black;
-  padding: 12px 24px;
-  border: none;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s;
-  bottom: 20px;
-  border: 1px solid black;
-}
-
-.ge-button-download:hover {
-  color: white;
-}
-
-/* Custom range input styles */
-.ge-effects-panel input[type="range"] {
-  -webkit-appearance: none;
-  width: 100%;
-  height: 4px;
-  background: #ddd;
-  border-radius: 2px;
-  outline: none;
-  margin: 10px 0;
-  position: relative;
-}
-
-/* Thumb (the draggable rectangle) */
-.ge-effects-panel input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 10px;
-  height: 10px;
-  background: black;
-  cursor: pointer;
-  transform: translate(-50%,-30%);
-  transition: all 0.2s ease;
-}
-
-.ge-effects-panel input[type="range"]::-moz-range-thumb {
-  width: 10px;
-  height: 10px;
-  background: black;
-  border: 2px solid white;
-  border-radius: 2px;
-  transform: translate(-50%,-30%);
-
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-/* Track (the line) */
-.ge-effects-panel input[type="range"]::-webkit-slider-runnable-track {
-  width: 100%;
-  height: 4px;
-  background: #ddd;
-  border-radius: 2px;
-  cursor: pointer;
-}
-
-.ge-effects-panel input[type="range"]::-moz-range-track {
-  width: 100%;
-  height: 4px;
-  background: #ddd;
-  border-radius: 2px;
-  cursor: pointer;
-}
-
-/* Hover effects */
-.ge-effects-panel input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
-  background: #333;
-}
-
-.ge-effects-panel input[type="range"]::-moz-range-thumb:hover {
-  transform: scale(1.1);
-  background: #333;
-}
-
-/* Active state */
-.ge-effects-panel input[type="range"]:active::-webkit-slider-thumb {
-  transform: scale(0.95);
-  background: #666;
-}
-
-.ge-effects-panel input[type="range"]:active::-moz-range-thumb {
-  transform: scale(0.95);
-  background: #666;
-}
-
-/* Fill the track based on value */
-.ge-effects-panel input[type="range"] {
-  background: linear-gradient(to right, black 0%, black var(--value, 50%), #ddd var(--value, 50%), #ddd 100%);
-  background-size: 200% 100%;
-  background-position: right;
-  transition: background-position 0.3s ease;
-}
-
-.ge-effects-panel input[type="range"]:focus {
-  outline: none;
-}
-
-/* Label and value styles */
-.ge-effects-panel label {
-  font-size: 14px;
-  color: #333;
-  margin-bottom: 5px;
-}
-
-.ge-effects-panel span {
-  font-size: 12px;
-  color: #666;
-}
-
-/* Panel container styles */
-.ge-effects-panel {
-  background: white;
-  padding: 20px;
-  border: 1px solid black;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  width: 100% !important;
+  max-height: 35vh !important; 
+  overflow-y: auto !important;
+  background: white !important;
+  border-top: 1px solid #000 !important;
+  padding: 20px !important;
+  z-index: 10 !important;
+  
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 15px !important;
 }
 
 .ge-effects-panel h3 {
-  margin-bottom: 20px;
-  font-weight: 500;
-  font-size: 16px;
-  font-weight: 500;
-  color: #333;
+  margin: 0 0 10px 0 !important;
+  font-size: 15px !important;
+  font-weight: bold !important;
+  color: #000 !important;
+  border-bottom: 2px solid #000 !important;
+  display: inline-block !important;
+  padding-bottom: 3px !important;
 }
 
-/* Effect group styles */
-.ge-effects-panel > div {
-  margin-bottom: 20px;
-  padding-bottom: 1opx;
-  border-bottom: 1px solid #eee;
+/* --- [3. Button Container] --- */
+.ge-button-container {
+  width: 100% !important;
+  background: white !important;
+  border-top: 1px solid #000 !important;
+  padding: 15px 20px !important;
+  z-index: 10 !important;
+  
+  display: flex !important;
+  gap: 10px !important;
 }
 
-.ge-effects-panel > div:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
+/* 하단 메뉴 버튼 (텍스트 줄바꿈 폭주 방지 적용) */
+.ge-button-container button {
+  flex: 1 !important;
+  min-width: 0 !important; /* 글자 너비보다 버튼이 작아질 수 있도록 허용 */
+  height: 44px !important;
+  border: 1px solid #000 !important;
+  background: #fff !important;
+  color: #000 !important;
+  font-size: 13px !important;
+  font-family: "Orbit", sans-serif !important;
+  cursor: pointer !important;
+  box-shadow: 2px 2px 0px rgba(0,0,0,1) !important;
+  transition: all 0.1s !important;
+  margin: 0 !important;
+  
+  /* 긴 텍스트 자동 줄바꿈 및 중앙 정렬 */
+  white-space: normal !important;
+  word-break: keep-all !important; 
+  line-height: 1.2 !important; 
+  padding: 5px !important; 
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
 }
 
+.ge-button-regenerate {
+  background: #000 !important;
+  color: #fff !important;
+}
 
-/* Ge.css 에 추가 */
+.ge-button-container button:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: none !important;
+}
 
+/* --- [UI 디테일 유지] --- */
+.ge-effects-panel input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  background: #000;
+  border-radius: 2px;
+  outline: none;
+  margin: 15px 0 10px 0;
+}
+.ge-effects-panel input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; 
+  height: 16px;
+  background: white;
+  border: 2px solid black;
+  border-radius: 50%;
+  cursor: pointer;
+  transform: translateY(-6px);
+}
+.ge-effects-panel input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 4px;
+  background: #000;
+}
+.ge-effects-panel label {
+  font-size: 13px;
+  color: #000;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+}
 .ge-layer-buttons {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3열 그리드 */
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+  margin-top: 10px;
 }
 
+/* 레이어 조작 버튼 (텍스트 줄바꿈 폭주 방지 적용) */
 .ge-layer-btn {
-  padding: 10px 10px;
-  border: 1px solid black;
+  min-width: 0 !important;
+  padding: 5px !important;
+  border: 1px solid #000;
   background: #fff;
   color: #000;
-  font-size: 10px;
+  font-size: 11px;
+  font-family: "Orbit", sans-serif;
   cursor: pointer;
-  transition: all 0.2s;
+  
+  /* 긴 텍스트 자동 줄바꿈 및 중앙 정렬 */
+  white-space: normal !important;
+  word-break: keep-all !important;
+  line-height: 1.2 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
-
 .ge-layer-btn.final {
-  grid-column: span 3; /* Final 버튼은 3칸 차지 */
-  background: #fff;
-  color: #000000;
+  grid-column: span 3;
   font-weight: bold;
-  margin-top: 4px;
 }
-
-.ge-layer-btn:hover {
-  background: #333;
+.ge-layer-btn:active, .ge-layer-btn.active {
+  background: #000;
   color: #fff;
-  border-color: #666;
 }
-
-.ge-layer-btn.active {
-  background: #222;
-  border: 1px solid #444;
-  color: #aaa;
-  font-weight: bold;
-}
-
-/* Responsive styles */
-@media screen and (max-width: 768px) {
-  .ge-container {
-    height: auto;
-    overflow-x: hidden;
-    min-height: 100vh;
-  }
-
-  .ge-title-container {
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    padding: 15px;
-  }
-
-  .ge-main {
-    flex-direction: column;
-    padding: 15px;
-    gap: 10px;
-  }
-
-  .ge-box1 {
-    width: 100%;
-    order: 2;
-    margin-top: 20px;
-  }
-
-  .ge-title {
-    font-size: 32px;
-    text-indent: 0;
-  }
-
-  .ge-canvas-container {
-    height: 100%;
-    padding: 0;
-  }
-
-  .ge-canvas {
-    height: 100%;
-  }
-
-  .ge-canvas:hover {
-    transform: none;
-  }
-
-  .ge-button-download {
-    position: static;
-    width: 100%;
-  }
-
-  .ge-button-regenerate {
-    width: 100%;
-  }
-
-  .ge-button-back,
-  .ge-button-archive {
-    width: 100%;
-  }
-
-  .ge-effects-panel {
-  position: relative;
-  background-color: white;
-  color: black;
-  z-Index: 10;
-  width: 100%;
-  height: 10%;
-  margin-bottom: 10px;
-  box-shadow: none;
-  border: 1px solid black;
-  }
-
-  .ge-button-container {
-    position: relative;
-    top: 0px;
-    right: 0px;
-    display:flex;
-    gap: 10px;
-    z-index: 10;
-  }
-
-}
-
