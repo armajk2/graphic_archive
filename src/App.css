@@ -1,109 +1,83 @@
+/* Base styles & Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --container-padding: 20px;
+}
+
+/* body: 핸드폰 기기 밖의 배경 (모니터 화면) */
+body {
+  background-color: #f0f0f0; /* 앱 화면과 구분되도록 회색 배경 적용 */
+  display: flex;
+  justify-content: center; /* 전체 화면에서 가로 중앙 정렬 */
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  color: black;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', "Orbit", sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-align: center;
+}
+
+/* .App: 실제 핸드폰 앱 화면 영역 */
 .App {
-    font-family: sans-serif;
-    font-family: "Orbit";
-    line-height: auto;
-  }
+  width: 100vw;
+  max-width: 430px; /* 실제 스마트폰(아이폰 Pro Max 급) 너비로 고정 */
+  min-height: 100vh;
+  background-color: #ffffff; /* 실제 앱 내부 배경색 */
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); /* 핸드폰 양옆 그림자 효과 (입체감) */
+  position: relative;
+  overflow-x: hidden; /* 가로 스크롤 방지 */
+}
 
+/* 폰트 및 UI 요소 스타일 */
+.orbit-regular {
+  font-family: "Orbit", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
 
+input[type="file"] {
+  margin: 20px 0;
+}
 
+button {
+  background-color: #ffffff;
+  padding: 12px 20px;
+  min-height: 44px; /* 모바일 환경에서 터치하기 편한 최소 높이 적용 */
+  border: 1px solid #ddd;
+  cursor: pointer;
+  font-family: "Orbit", sans-serif;
+}
 
-  input[type="file"] {
-    margin: 20px 0;
-  }
+button:hover {
+  background-color: #000000;
+  color: #ffffff; /* hover 시 글자색 반전 추가 */
+}
 
+canvas {
+  border: 1px solid #555;
+  max-width: 100%; /* 캔버스가 모바일 화면 밖으로 튀어나가지 않게 제한 */
+}
 
-  .orbit-regular {
-    font-family: "Orbit", sans-serif;
-    font-weight: 400;
-    font-style: normal;
-  }
-  
+/* App 내부에서 사용할 여백 컨테이너 */
+.container {
+  width: 100%;
+  padding: 0 var(--container-padding);
+}
 
+.main-content {
+  padding: 10px;
+  gap: 20px;
+}
 
-  button {
-    background-color: #ffffff;
-    padding: 10px 20px;
-    border: none;
-    cursor: pointer;
-    font-family: "Orbit", sans-serif;
-
-  }
-  
-  button:hover {
-    background-color: #000000;
-  }
-  
-  canvas {
-    border: 1px solid #555;
-  }
-
-  body {
-    color: black;
-    font-family: sans-serif;
-    margin: 0;
-    padding: 0;
-    text-align: center;
-    height: 100%;
-  }
-  
-  /* Common responsive styles */
-  :root {
-    --mobile-breakpoint: 768px;
-    --container-padding: 20px;
-  }
-
-  /* Base styles */
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* Responsive container */
-  .container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 var(--container-padding);
-  }
-
-
-
-  /* Mobile-first media queries */
-  @media screen and (max-width: 768px) {
-    :root {
-      --container-padding: 15px;
-    }
-
-
-    /* Adjust spacing for mobile */
-    .main-content {
-      padding: 10px !important;
-      gap: 20px !important;
-    }
-
-    /* Make buttons more touch-friendly */
-    button {
-      min-height: 44px !important;
-      padding: 12px 20px !important;
-    }
-
-    /* Adjust grid layouts for mobile */
-    .grid {
-      grid-template-columns: 1fr !important;
-      gap: 15px !important;
-    }
-  }
-
-  /* Web-specific styles */
-  @media screen and (min-width: 769px) {
-    /* Add any web-specific styles here */
-  }
-  
-  
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
