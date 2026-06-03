@@ -50,7 +50,6 @@ body {
   scrollbar-width: none;    /* Firefox */
 }
 
-/* 💻 [미디어 쿼리] 화면 너비가 769px 이상인 데스크톱 환경일 때만 적용 */
 @media screen and (min-width: 769px) {
   body {
     background-color: #f3f3f3; /* PC로 볼 때만 주변 바탕을 연한 회색으로 변경 */
